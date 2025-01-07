@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 // import MobileNav from "./MobileNav"
-import { cn } from "@/lib/utils"
-import { Link } from "react-router"
-import { ModeToggle } from "./mode-toggle"
+import { cn } from "@/lib/utils";
+import { Link } from "react-router";
+import { ModeToggle } from "./mode-toggle";
 
 const Navbar = () => {
   return (
@@ -11,15 +11,8 @@ const Navbar = () => {
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
         <div className="flex items-center gap-2">
           {/* <MobileNav /> */}
-          <Link
-            to="/"
-            className="flex items-center "
-          >
-            <img
-              src="/images/logo.png"
-              width={60}
-              height={6}
-            />
+          <Link to="/" className="flex items-center ">
+            <img src="/images/logo.png" width={60} height={6} />
             <span className="self-center whitespace-nowrap text-2xl font-semibold dark:text-white">
               study<span className="text-primary">wise</span>
             </span>
@@ -49,7 +42,7 @@ const Navbar = () => {
               <Button
                 variant="default"
                 className={cn(
-                  "hidden h-9 transform rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white transition-all hover:scale-105 hover:bg-green-700 hover:shadow-lg hover:shadow-green-500/50 dark:bg-primary md:flex lg:flex"
+                  "hidden h-9 transform rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white transition-all hover:scale-105 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/50 dark:bg-primary md:flex lg:flex"
                 )}
               >
                 Get Started
@@ -63,7 +56,7 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
