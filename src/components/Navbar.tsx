@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router";
 import { ModeToggle } from "./mode-toggle";
+import Logo from "@/lib/logo";
 
 const Navbar = () => {
   return (
@@ -12,8 +13,8 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           {/* <MobileNav /> */}
           <Link to="/" className="flex items-center ">
-            <img src="/images/logo.png" width={60} height={6} />
-            <span className="self-center whitespace-nowrap text-2xl font-semibold dark:text-white">
+            <Logo className="h-11 w-11 pt-2" />
+            <span className="self-center whitespace-nowrap text-3xl font-semibold dark:text-white">
               study<span className="text-primary">wise</span>
             </span>
           </Link>
