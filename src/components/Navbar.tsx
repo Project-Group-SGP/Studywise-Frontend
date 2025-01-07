@@ -7,6 +7,9 @@ import { ModeToggle } from "./mode-toggle";
 import Logo from "@/lib/logo";
 
 const Navbar = () => {
+  const handleGoogleLogin = (): void => {
+    window.location.href = "http://localhost:3000/auth/google";
+  };
   return (
     <nav className="dark:bg-dark-background/70 dark:border-dark-border fixed start-0 top-0 z-20 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
@@ -45,6 +48,7 @@ const Navbar = () => {
                 className={cn(
                   "hidden h-9 transform rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white transition-all hover:scale-105 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/50 dark:bg-primary md:flex lg:flex"
                 )}
+                onClick={handleGoogleLogin}
               >
                 Get Started
                 <ArrowRight
