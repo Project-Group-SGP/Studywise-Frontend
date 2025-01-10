@@ -6,9 +6,9 @@ import { ThemeProvider } from "./components/providers/theme-provider.tsx";
 import Home from "./pages/Home.tsx";
 import GroupsPage from "./pages/Group.tsx";
 import NotFoundPage from "./pages/Notfoundpage.tsx";
-import GroupPage from "./pages/Group_page.tsx";
 import { AuthProvider } from "./components/providers/auth.tsx";
 import { ProtectedRoute } from "./components/protectedRoutes.tsx";
+import StudyGroupPage from "./pages/Group_page.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -29,7 +29,7 @@ createRoot(document.getElementById("root")!).render(
               path="/groups/:groupId"
               element={
                 <ProtectedRoute>
-                  <GroupPage params={{ groupId: "1" }} />
+                  <StudyGroupPage  />
                 </ProtectedRoute>
               }
             />
