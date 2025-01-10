@@ -29,10 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const API_URL = import.meta.env.VITE_API_URL as string;
+
   const checkAuth = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/me", {
+      const response = await axios.get(`${API_URL}/me`, {
         withCredentials: true,
       });
       setUser(response.data);
@@ -50,13 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = () => {
-    window.location.href = "http://localhost:3000/auth/google";
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   const logout = async () => {
     try {
       await axios.post(
-        "http://localhost:3000/logout",
+        `${API_URL}/logout`,
         {},
         {
           withCredentials: true,

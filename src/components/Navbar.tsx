@@ -1,16 +1,11 @@
 import { Button } from "@/components/ui/button";
 import Logo from "@/lib/logo";
 import { ArrowRight, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "./providers/auth";
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const { isAuthenticated, login, logout, user } = useAuth();
-
-  const handleGoogleLogin = async () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
-  };
   return (
     <nav className="dark:bg-dark-background/70 dark:border-dark-border fixed start-0 top-0 z-20 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
