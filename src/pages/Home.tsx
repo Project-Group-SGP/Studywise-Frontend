@@ -13,6 +13,10 @@ import {
   Rocket,
 } from "lucide-react";
 import DeveloperSection from "@/components/DeveloperSection";
+import { useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router";
+import { useAuth } from "@/components/providers/auth";
 
 function Home() {
   // const quotes = [
@@ -28,6 +32,18 @@ function Home() {
 
   // const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
+  const navigate = useNavigate();
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/groups");
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
       <Navbar />
@@ -158,9 +174,6 @@ function Home() {
 }
 
 export default Home;
-
-
-
 
 // import React from 'react';
 // import Navbar from "@/components/Navbar";

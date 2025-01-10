@@ -1,15 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-// import MobileNav from "./MobileNav"
-import { cn } from "@/lib/utils";
-import { Link } from "react-router";
-import { ModeToggle } from "./mode-toggle";
 import Logo from "@/lib/logo";
+import { ArrowRight, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "./providers/auth";
 
 const Navbar = () => {
-  const handleGoogleLogin = (): void => {
-    window.location.href = "http://localhost:3000/auth/google";
-  };
+  const { isAuthenticated, login, logout, user } = useAuth();
   return (
     <nav className="dark:bg-dark-background/70 dark:border-dark-border fixed start-0 top-0 z-20 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
@@ -39,24 +35,28 @@ const Navbar = () => {
         {/* Action Buttons */}
         <div className="flex space-x-3 md:order-2 md:space-x-0 rtl:space-x-reverse">
           <div className="flex gap-4">
-            <div className="hidden md:block lg:block">
-              <ModeToggle />
-            </div>
-            <Link to="/auth/signup">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <span>{user?.name}</span>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  onClick={logout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
               <Button
                 variant="default"
-                className={cn(
-                  "hidden h-9 transform rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white transition-all hover:scale-105 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/50 dark:bg-primary md:flex lg:flex"
-                )}
-                onClick={handleGoogleLogin}
+                className="flex items-center gap-2"
+                onClick={login}
               >
                 Get Started
-                <ArrowRight
-                  className="ml-1.5 h-5 w-5 transform transition-transform group-hover:translate-x-1 group-hover:scale-110"
-                  aria-hidden="true"
-                />
+                <ArrowRight className="h-4 w-4" />
               </Button>
-            </Link>
+            )}
           </div>
         </div>
       </div>
