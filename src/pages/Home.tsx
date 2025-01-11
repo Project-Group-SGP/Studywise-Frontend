@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/components/providers/auth";
+import LoadingScreen from "@/Loading";
 
 function Home() {
   // const quotes = [
@@ -42,7 +43,7 @@ function Home() {
   }, [isAuthenticated, navigate]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
   return (
     <>

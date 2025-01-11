@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, Calendar, Search, Zap } from 'lucide-react';
+import { Users, BookOpen, Calendar, Search, Zap, Star } from 'lucide-react';
 import Navbar from '@/components/Nav_bar';
+import { useAuth } from '@/components/providers/auth';
 
 type Group = {
   id: number;
@@ -29,6 +30,8 @@ export default function GroupsPage() {
   const [groups, setGroups] = useState(mockGroups);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const { user } = useAuth();
+
   const createGroup = (name: string, subject: string, description: string) => {
     const newGroup = {
       id: groups.length + 1,
@@ -45,20 +48,68 @@ export default function GroupsPage() {
     group.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const timeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  };
+
   return (
-    <div className="min-h-screen bg-background mt-10">
+    <div className="min-h-screen bg-background mt-16">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-center">Unite & Conquer: Join Your Study Squad!</h1>
-        
-        <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg">
+        {/* Enhanced Welcome Section */}
+        <div className="mb-12 text-center">
+          <div className="relative">
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+              <div className="inline-flex gap-2">
+                <Star className="h-5 w-5 text-yellow-500 animate-pulse" />
+                <Star className="h-5 w-5 text-yellow-500 animate-pulse delay-100" />
+                <Star className="h-5 w-5 text-yellow-500 animate-pulse delay-200" />
+              </div>
+            </div>
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Unite & Conquer: Join Your Study Squad!
+            </h1>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-lg p-8 mb-8 transform hover:scale-102 transition-transform">
+              <p className="text-2xl font-medium mb-2">
+                Good {timeOfDay()}, {user?.name || 'Scholar'}! 🌟
+              </p>
+              <p className="text-muted-foreground">
+                Ready to ace your studies? Your study squad awaits!
+              </p>
+            </div>
+
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="p-4 rounded-lg bg-primary/5 flex items-center gap-3">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <span>Learn Together</span>
+              </div>
+              <div className="p-4 rounded-lg bg-secondary/5 flex items-center gap-3">
+                <Users className="h-5 w-5 text-secondary" />
+                <span>Grow Together</span>
+              </div>
+              <div className="p-4 rounded-lg bg-primary/5 flex items-center gap-3">
+                <Zap className="h-5 w-5 text-primary" />
+                <span>Succeed Together</span>
+              </div>
+            </div> */}
+
+{/* <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg">
           <p className="text-lg text-center">
             "Coming together is a beginning. Keeping together is progress. Working together is success." 
             <span className="block mt-2  text-primary font-semibold">- Henry Ford</span>
           </p>
+        </div> */}
+          </div>
         </div>
 
+        {/* Rest of the content */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
           <div className="flex gap-4 w-full md:w-auto">
             <CreateGroupDialog onCreateGroup={createGroup} />

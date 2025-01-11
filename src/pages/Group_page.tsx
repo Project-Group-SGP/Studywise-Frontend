@@ -11,6 +11,7 @@ import Navbar from '@/components/Nav_bar';
 import Member from '@/components/member';
 import Chat from '@/components/Chat';
 import Session from '@/components/Session';
+import { useAuth } from '@/components/providers/auth';
 
 const groupData = {
   id: '1',
@@ -54,12 +55,13 @@ export default function StudyGroupPage(  ) {
   ];
 
  
-
+  const { user } = useAuth();
  
 
   return (
     <div className="mt-12 min-h-screen bg-gradient-to-br from-background to-secondary/20 ">
       <Navbar />
+
       <div className={cn(
         "fixed left-0 top-0 h-screen bg-card transition-all duration-300 flex flex-col shadow-lg",
         isCollapsed ? "w-16" : "w-56"

@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./providers/auth";
+import LoadingScreen from "@/Loading";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,7 +11,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
 
   if (isLoading) {
-    return <div>Loading...</div>; // You might want to replace this with a proper loading component
+    return <LoadingScreen />; 
   }
 
   if (!isAuthenticated) {

@@ -3,6 +3,7 @@ import Logo from "@/lib/logo";
 import { ArrowRight, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "./providers/auth";
+import { ModeToggle } from "./mode-toggle";
 
 const Navbar = () => {
   const { isAuthenticated, login, logout, user } = useAuth();
@@ -34,6 +35,9 @@ const Navbar = () => {
 
         {/* Action Buttons */}
         <div className="flex space-x-3 md:order-2 md:space-x-0 rtl:space-x-reverse">
+          <div className="mr-2 hidden md:block lg:block">
+            <ModeToggle />
+          </div>
           <div className="flex gap-4">
             {isAuthenticated ? (
               <div className="flex items-center gap-4">

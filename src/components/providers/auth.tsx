@@ -64,6 +64,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           withCredentials: true,
         }
       );
+      // Function to clear all cookies for the current domain
+      function clearAllCookies() {
+        const cookies = document.cookie.split("; ");
+        for (const cookie of cookies) {
+          const cookieName = cookie.split("=")[0];
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.studywise.ai; SameSite=None; Secure`;
+        }
+      }
+
+      // Clear cookies and redirect
+      clearAllCookies();
+      window.location.href = "/";
+
       setUser(null);
       setError(null);
     } catch (error) {
