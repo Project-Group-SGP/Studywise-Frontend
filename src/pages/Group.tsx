@@ -4,11 +4,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, Calendar, Search, Zap, Star } from 'lucide-react';
+import { Users, BookOpen, Calendar, Search,  Star } from 'lucide-react';
 import Navbar from '@/components/Nav_bar';
 import { useAuth } from '@/components/providers/auth';
+import { CreateGroupDialog } from '@/components/group/CreateGroupDialog';
 
 type Group = {
   id: number;
@@ -138,71 +138,7 @@ export default function GroupsPage() {
   );
 }
 
-function CreateGroupDialog({ onCreateGroup}: { onCreateGroup: (name: string, subject: string, description: string) => void }) {
-  const [name, setName] = useState('');
-  const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onCreateGroup(name, subject, description);
-    setName('');
-    setSubject('');
-    setDescription('');
-  };
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button size="lg" className="bg-gradient-to-r from-primary to-primary hover:opacity-90">
-          <Zap className="mr-2 h-4 w-4" /> Create Group
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create a New Study Group</DialogTitle>
-          <DialogDescription>
-            Fill in the details to create your new study group.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter group name"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input
-                id="subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Enter subject"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your study group"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit">Create Group</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function JoinGroupDialog() {
   return (

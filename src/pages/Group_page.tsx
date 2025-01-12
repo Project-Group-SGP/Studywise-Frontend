@@ -11,7 +11,7 @@ import Navbar from '@/components/Nav_bar';
 import Member from '@/components/member';
 import Chat from '@/components/Chat';
 import Session from '@/components/Session';
-import { useAuth } from '@/components/providers/auth';
+
 
 const groupData = {
   id: '1',
@@ -53,10 +53,6 @@ export default function StudyGroupPage(  ) {
     { id: 'achievements', icon: Crown, label: 'Your Wins' },
     { id: 'resources', icon: BookOpen, label: 'Study Hub' }
   ];
-
- 
-  const { user } = useAuth();
- 
 
   return (
     <div className="mt-12 min-h-screen bg-gradient-to-br from-background to-secondary/20 ">
