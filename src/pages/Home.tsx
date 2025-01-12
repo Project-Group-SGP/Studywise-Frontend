@@ -1,23 +1,22 @@
+import DeveloperSection from "@/components/DeveloperSection";
+import { FeatureCard } from "@/components/feature-card";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/components/providers/auth";
 import { Button } from "@/components/ui/button";
 import { HeroParallax } from "@/components/ui/hero-parallax";
-import { FeatureCard } from "@/components/feature-card";
-import {
-  Users,
-  BookOpen,
-  MessageSquare,
-  Calendar,
-  PenTool,
-  FileText,
-  BrainCircuit,
-  Rocket,
-} from "lucide-react";
-import DeveloperSection from "@/components/DeveloperSection";
-import { useEffect } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router";
-import { useAuth } from "@/components/providers/auth";
 import LoadingScreen from "@/Loading";
+import {
+  BookOpen,
+  BrainCircuit,
+  Calendar,
+  FileText,
+  MessageSquare,
+  PenTool,
+  Rocket,
+  Users,
+} from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 
 function Home() {
   // const quotes = [
