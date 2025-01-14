@@ -9,6 +9,7 @@ import NotFoundPage from "./pages/Notfoundpage.tsx";
 import { AuthProvider } from "./components/providers/auth.tsx";
 import { ProtectedRoute } from "./components/protectedRoutes.tsx";
 import StudyGroupPage from "./pages/Group_page.tsx";
+import GroupRequestsPage from "./components/group/join-Reuest-page.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -33,6 +34,7 @@ createRoot(document.getElementById("root")!).render(
                 </ProtectedRoute>
               }
             />
+           
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
