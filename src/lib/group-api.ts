@@ -143,3 +143,17 @@ export async function deleteGroup(groupId: string): Promise<Boolean> {
     return false;
   }
 }
+
+// get group message
+export async function getGroupMessages(groupId: string): Promise<any> {
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/groups/${groupId}/messages`,
+      { withCredentials: true }
+    );
+    return response.data.messages;
+  } catch (error) {
+    console.error("Error getting group messages:", error);
+    throw error;
+  }
+}
