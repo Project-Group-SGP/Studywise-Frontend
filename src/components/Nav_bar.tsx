@@ -1,21 +1,32 @@
-import { Link } from "react-router-dom";
-import { ModeToggle } from "./mode-toggle";
-import Logo from "@/lib/logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "lucide-react";
+import Logo from "@/lib/logo";
+import {
+  getCurrentPushSubscription,
+  registerPushNotifications,
+  unregisterPushNotification,
+} from "@/lib/notification/push-service";
+import { Bell, Loader2, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ModeToggle } from "./mode-toggle";
 import { useAuth } from "./providers/auth";
-import { UserAvatar } from "./UserAvatar";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Switch } from "./ui/switch";
+import { UserAvatar } from "./UserAvatar";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const { user, logout } = useAuth(); // Get logout from useAuth
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasActivePushSubscription, setHasActivePushSubscription] =
+    useState(false);
+  const [isToggling, setIsToggling] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -26,6 +37,51 @@ const Navbar = () => {
       console.error("Error logging out:", error);
     }
   };
+
+  useEffect(() => {
+    async function getActivePushSubscription() {
+      try {
+        const subscription = await getCurrentPushSubscription();
+        setHasActivePushSubscription(!!subscription);
+      } catch (error) {
+        console.error("Error fetching push subscription:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getActivePushSubscription();
+  }, []);
+
+  async function setPushNotificationEnabled(enabled: boolean) {
+    setIsToggling(true);
+    try {
+      if (enabled) {
+        await registerPushNotifications();
+        toast.success("Push notifications enabled", {
+          closeButton: true,
+        });
+      } else {
+        await unregisterPushNotification();
+        toast.success("Push notifications disabled", {
+          closeButton: true,
+        });
+      }
+      setHasActivePushSubscription(enabled);
+    } catch (error) {
+      console.error("Error toggling push notification:", error);
+      if (enabled && Notification.permission === "denied") {
+        toast.warning(
+          "Please enable push notifications in your browser settings"
+        );
+      } else {
+        toast.error("Something went wrong, please try again later", {
+          closeButton: true,
+        });
+      }
+    } finally {
+      setIsToggling(false);
+    }
+  }
 
   return (
     <nav className="dark:bg-dark-background/70 dark:border-dark-border fixed start-0 top-0 z-20 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
@@ -64,13 +120,28 @@ const Navbar = () => {
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuItem
+                className="flex items-center justify-between"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  <span>Notifications</span>
+                </div>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Switch
+                    checked={hasActivePushSubscription}
+                    onCheckedChange={setPushNotificationEnabled}
+                    disabled={isToggling}
+                  />
+                )}
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>My Groups</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -10,7 +10,6 @@ import { fetchGroups, getjoinRequest } from "../lib/group-api";
 import { GroupSection } from "@/components/group/Group-section";
 import { UserGroupSection } from "@/components/group/Users-group-section";
 
-
 export default function GroupsPage() {
   const { user } = useAuth();
   const [createdGroups, setCreatedGroups] = useState<Group[]>([]);
@@ -19,7 +18,6 @@ export default function GroupsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [request, setRequest] = useState<JoinRequest[]>([]);
-
 
   useEffect(() => {
     const loadGroups = async () => {
@@ -33,10 +31,6 @@ export default function GroupsPage() {
         setCreatedGroups(createdGroups || []);
         setMemberGroups(memberGroups || []);
         setRequest(requests);
-        // console.log(typeof createdGroups); 
-        // console.log(memberGroups);
-        
-        
       } catch (error) {
         console.error("Error fetching groups:", error);
         setError("Failed to load groups. Please try again later.");
@@ -47,28 +41,23 @@ export default function GroupsPage() {
     loadGroups();
   }, [user]);
 
-  // console.log("outside useEffect");
-  // console.log(createdGroups);
-  // console.log(memberGroups);
-
-  const filteredCreatedGroups = createdGroups.filter(group =>
-    group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    group.subject.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCreatedGroups = createdGroups.filter(
+    (group) =>
+      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // console.log(filteredCreatedGroups);
-
-  const filteredMemberGroups = memberGroups.filter(group =>
-    group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    group.subject.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMemberGroups = memberGroups.filter(
+    (group) =>
+      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // console.log(filteredMemberGroups);
   const timeOfDay = () => {
     const now = new Date();
-    const istTime = new Date(now.getTime() + (5 * 60 + 30) * 60 * 1000); // Adjust to IST
-    const hour = istTime.getUTCHours(); // Get hours in UTC+5:30
-    
+    const istTime = new Date(now.getTime() + (5 * 60 + 30) * 60 * 1000);
+    const hour = istTime.getUTCHours();
+
     if (hour < 12) return "morning";
     if (hour < 17) return "afternoon";
     return "evening";
@@ -104,45 +93,52 @@ export default function GroupsPage() {
         </div>
 
         {/* Search and Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-          <div className="flex gap-4 w-full md:w-auto">
-            <CreateGroupDialog
-              onCreateGroup={(newGroup) =>
-                setCreatedGroups((prevGroups) => [...prevGroups, newGroup])
-              }
-            />
-            <JoinGroupDialog />
-          </div>
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search groups..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        <div className="max-w-screen-xl mx-auto p-2">
+          <div className="flex justify-between items-center gap-4 mb-8">
+            <div className="flex gap-4">
+              <CreateGroupDialog
+                onCreateGroup={(newGroup) =>
+                  setCreatedGroups((prevGroups) => [...prevGroups, newGroup])
+                }
+              />
+              <JoinGroupDialog />
+            </div>
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search groups..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Created Groups Section */}
-        <UserGroupSection
-          title="Your Created Groups"
-          groups={filteredCreatedGroups}
-          isLoading={isLoading}
-          error={error}  
-          request={request}
-          setRequest={setRequest}
-        />
+        {/* Groups Display */}
+        <div className="max-w-screen-xl mx-auto p-2">
+          {/* Created Groups Section */}
+          <UserGroupSection
+            title="Your Created Groups"
+            groups={filteredCreatedGroups}
+            isLoading={isLoading}
+            error={error}
+            request={request}
+            setRequest={setRequest}
+          />
+        </div>
 
-        {/* Member Groups Section */}
-        <GroupSection
-          title="Groups You're a Member Of"
-          groups={filteredMemberGroups}
-          isLoading={isLoading}
-          error={error}
-          isOwner={false}
-        />
+        <div className="max-w-screen-xl mx-auto p-2">
+          {/* Member Groups Section */}
+          <GroupSection
+            title="Groups You're a Member Of"
+            groups={filteredMemberGroups}
+            isLoading={isLoading}
+            error={error}
+            isOwner={false}
+          />
+        </div>
       </div>
     </div>
   );

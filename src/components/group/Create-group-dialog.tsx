@@ -1,7 +1,8 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,40 +11,45 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { createGroup } from "@/lib/group-api"
-import { Group } from "../../type"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createGroup } from "@/lib/group-api";
+import { Group } from "../../type";
 
 interface CreateGroupDialogProps {
-  onCreateGroup: (group: Group) => void
+  onCreateGroup: (group: Group) => void;
 }
 
 export function CreateGroupDialog({ onCreateGroup }: CreateGroupDialogProps) {
-  const [groupName, setGroupName] = useState("")
-  const [groupSubject, setGroupSubject] = useState("")
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [groupName, setGroupName] = useState("");
+  const [groupSubject, setGroupSubject] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   const handleCreateGroup = async () => {
-    setIsCreating(true)
-    setError(null)
+    setIsCreating(true);
+    setError(null);
     try {
-      const newGroup = await createGroup(groupName, groupSubject)
-      onCreateGroup(newGroup)
-      setGroupName("")
-      setGroupSubject("")
+      const newGroup = await createGroup(groupName, groupSubject);
+      onCreateGroup(newGroup);
+      setGroupName("");
+      setGroupSubject("");
+      setOpen(false); // Close the dialog
+      // Refresh the current route by navigating to the same location
+      navigate(0); // This will refresh the current page
     } catch (error) {
-      console.error("Error creating group:", error)
-      setError("Failed to create group. Please try again.")
+      console.error("Error creating group:", error);
+      setError("Failed to create group. Please try again.");
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="lg">Create Group</Button>
       </DialogTrigger>
@@ -86,6 +92,5 @@ export function CreateGroupDialog({ onCreateGroup }: CreateGroupDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

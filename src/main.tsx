@@ -1,15 +1,16 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { BrowserRouter, Route, Routes } from "react-router";
-import { ThemeProvider } from "./components/providers/theme-provider.tsx";
-import Home from "./pages/Home.tsx";
-import GroupsPage from "./pages/Group.tsx";
-import NotFoundPage from "./pages/Notfoundpage.tsx";
-import { AuthProvider } from "./components/providers/auth.tsx";
 import { ProtectedRoute } from "./components/protectedRoutes.tsx";
+import { AuthProvider } from "./components/providers/auth.tsx";
+import { ThemeProvider } from "./components/providers/theme-provider.tsx";
+import RegisterServiceWorker from "./components/RegisterServiceWorker.tsx";
+import "./index.css";
+import GroupsPage from "./pages/Group.tsx";
 import StudyGroupPage from "./pages/Group_page.tsx";
-import GroupRequestsPage from "./components/group/join-Reuest-page.tsx";
+import Home from "./pages/Home.tsx";
+import NotFoundPage from "./pages/Notfoundpage.tsx";
+import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -22,6 +23,7 @@ createRoot(document.getElementById("root")!).render(
               path="/groups"
               element={
                 <ProtectedRoute>
+                  <RegisterServiceWorker />
                   <GroupsPage />
                 </ProtectedRoute>
               }
@@ -30,15 +32,17 @@ createRoot(document.getElementById("root")!).render(
               path="/groups/:groupId"
               element={
                 <ProtectedRoute>
-                  <StudyGroupPage  />
+                  <RegisterServiceWorker />
+                  <StudyGroupPage />
                 </ProtectedRoute>
               }
             />
-           
+
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      <Toaster closeButton richColors />
     </ThemeProvider>
   </StrictMode>
 );
