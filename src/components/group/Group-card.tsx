@@ -3,7 +3,7 @@ import { Group, JoinRequest } from "../../type";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpen, Calendar, Check, Copy, UserPlus } from 'lucide-react';
+import { Users, BookOpen, Calendar, Check, Copy, UserPlus, ArrowRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,13 +22,9 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
   const [openCodeDialog, setOpenCodeDialog] = useState(false);
   const [openRequestsDialog, setOpenRequestsDialog] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const navigate = useNavigate();
-
-  console.log("GroupCard");
-  
-  console.log(requests.at(0)?.id);
-  
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(group.code);
@@ -38,42 +34,31 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
   };
 
   const handleAcceptRequest = async (requestId: string) => {
-    // Update the state to remove the accepted request
-    console.log("requestId: ", requestId);
-    
     setRequest?.(prevRequests => prevRequests.filter(req => req.id !== requestId));
-
-    try{
-        const respose = await acceptRequest(requestId);
-        console.log("response: ", respose);
-        
+    try {
+      await acceptRequest(requestId);
       toast({title: "Request accepted", type:"foreground" });
     } catch (error) {
-      console.error("Error accepting request:", error);
       toast({title: "Error accepting request", type:"foreground" });
     }
   };
 
   const handleRejectRequest = async(requestId: string) => {
-    // Update the state to remove the rejected request
     setRequest?.(prevRequests => prevRequests.filter(req => req.id !== requestId));
-
-    try{
-      const response = await rejectRequest(requestId);
-      console.log("response: ", response);
+    try {
+      await rejectRequest(requestId);
       toast({title: "Request rejected", type:"foreground" });
-    }catch{
+    } catch {
       toast({title: "Error rejecting request", type:"foreground" });
-    } 
-
+    }
   };
 
   const RequestItem = ({ request }: { request: JoinRequest }) => (
-    <div className="flex items-center justify-between py-4">
+    <div className="flex items-center justify-between py-4 hover:bg-muted/50 rounded-lg px-3 transition-colors duration-200">
       <div className="flex items-center space-x-4">
-        <Avatar>
+        <Avatar className="border-2 border-primary/20">
           <AvatarImage src={request.avatar} alt={request.name} />
-          <AvatarFallback>{request.name.charAt(0)}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10">{request.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div>
           <p className="text-sm font-medium">{request.name}</p>
@@ -83,14 +68,16 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
       <div className="space-x-2">
         <Button 
           size="sm" 
-          variant="outline" 
+          variant="outline"
+          className="hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/20"
           onClick={() => handleAcceptRequest(request.id)}
         >
-          Accept
+          <Check className="w-4 h-4 mr-1" /> Accept
         </Button>
         <Button 
           size="sm" 
-          variant="outline" 
+          variant="outline"
+          className="hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20"
           onClick={() => handleRejectRequest(request.id)}
         >
           Reject
@@ -100,11 +87,22 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
   );
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-      <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-white">
-        <div className="flex justify-between items-start">
+    <Card 
+      className="overflow-hidden transition-all duration-300 group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <CardHeader className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(40deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute -right-12 -top-12 w-24 h-24 bg-white/10 rounded-full blur-2xl transform group-hover:scale-150 transition-transform duration-700" />
+        <div className="relative flex justify-between items-start">
           <div>
-            <CardTitle>{group.name}</CardTitle>
+            <CardTitle className="text-xl mb-1 flex items-center gap-2">
+              {group.name}
+              <Badge variant="secondary" className="bg-white/20 hover:bg-white/30 transition-colors">
+                {group.subject}
+              </Badge>
+            </CardTitle>
             <CardDescription className="text-white/90">
               {group.subject}
             </CardDescription>
@@ -115,21 +113,22 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-white hover:text-white/80"
+                  className="text-white hover:bg-white/20 transition-colors"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="min-w-10 max-w-60">
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Group Code</DialogTitle>
+                  <DialogTitle>Group Invitation Code</DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center justify-between p-4 bg-muted rounded-md">
-                  <code>{group.code}</code>
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <code className="text-lg font-mono">{group.code}</code>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={handleCopyCode}
+                    className={copied ? "text-green-500" : ""}
                   >
                     {copied ? (
                       <Check className="h-4 w-4" />
@@ -144,37 +143,49 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <Users size={16} />
-            <span>{group.memberIds.length} members</span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-sm">
+              <div className="p-2 rounded-full bg-primary/10 text-primary">
+                <Users size={16} />
+              </div>
+              <span>{group.memberIds.length} members</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm">
+              <div className="p-2 rounded-full bg-primary/10 text-primary">
+                <Calendar size={16} />
+              </div>
+              <span>Next: {group.nextMeeting}</span>
+            </div>
           </div>
-          <Badge variant="secondary">{group.subject}</Badge>
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
-          <Calendar size={16} />
-          <span>Next meeting: {group.nextMeeting}</span>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" className="flex-1 hover:bg-primary/5"
-         onClick={() => navigate(`/groups/${group.id}`)}
+      <CardFooter className="flex justify-between gap-2 pb-6">
+        <Button 
+          variant="outline" 
+          className="flex-1 hover:bg-primary hover:text-white transition-colors group"
+          onClick={() => navigate(`/groups/${group.id}`)}
         >
-          <BookOpen className="mr-2 h-4 w-4" /> View Group
+          <BookOpen className="mr-2 h-4 w-4 group-hover:animate-pulse" /> 
+          View Group
+          <ArrowRight className={`ml-2 h-4 w-4 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""}`} />
         </Button>
         {isRequest > 0 && (
           <Dialog open={openRequestsDialog} onOpenChange={setOpenRequestsDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="ml-2 hover:bg-primary/5">
+              <Button 
+                variant="outline" 
+                className="hover:bg-primary hover:text-white transition-colors"
+              >
                 <UserPlus className="mr-2 h-4 w-4" />
                 {isRequest} Request{isRequest > 1 ? 's' : ''}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Group Join Requests</DialogTitle>
+                <DialogTitle>Pending Join Requests</DialogTitle>
               </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto">
+              <div className="max-h-[60vh] overflow-y-auto space-y-2 p-2">
                 {requests.map((request) => (
                   <RequestItem key={request.id} request={request} />
                 ))}
@@ -186,4 +197,3 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
     </Card>
   );
 }
-
