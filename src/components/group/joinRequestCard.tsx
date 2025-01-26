@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { acceptRequest, rejectRequest } from '../../lib/group-api'
 import { UserAvatar } from '../UserAvatar'
+import { toast } from 'sonner'
 
 interface JoinRequestCardProps {
   id: string
@@ -19,8 +20,10 @@ export function JoinRequestCard({ id, name, avatar, email }: JoinRequestCardProp
     try {
       if (action === 'accept') {
         await acceptRequest(id)
+        toast.success('Request accepted', { duration: 3000 })
       } else {
         await rejectRequest(id)
+        toast.success('Request rejected', { duration: 3000 })
       }
     } catch (error) {
       console.error('Error:', error)

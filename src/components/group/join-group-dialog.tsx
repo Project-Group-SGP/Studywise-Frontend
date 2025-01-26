@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { joinGroup } from "@/lib/group-api"
+import { toast } from "sonner"
 
 export function JoinGroupDialog() {
   const [groupCode, setGroupCode] = useState("")
@@ -25,9 +26,11 @@ export function JoinGroupDialog() {
     setError(null)
     try {
       await joinGroup(groupCode)
+      toast.success("Successfully joined group")
       window.location.reload() // Refresh to show new group
     } catch (error) {
       console.error("Error joining group:", error)
+      toast.error("Failed to join group. Please check the code and try again.")
       setError("Failed to join group. Please check the code and try again.")
     } finally {
       setIsJoining(false)

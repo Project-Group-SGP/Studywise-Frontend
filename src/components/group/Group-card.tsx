@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, BookOpen, Calendar, Check, Copy, UserPlus, ArrowRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { acceptRequest, rejectRequest } from "@/lib/group-api";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 interface GroupCardProps {
   group: Group;
@@ -29,7 +30,7 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
   const handleCopyCode = () => {
     navigator.clipboard.writeText(group.code);
     setCopied(true);
-    toast({title: "Code copied to clipboard", type:"foreground" });
+    toast.success("Code copied to clipboard", { duration: 3000 });
     setTimeout(() => setCopied(false), 3000);
   };
 
@@ -37,9 +38,9 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
     setRequest?.(prevRequests => prevRequests.filter(req => req.id !== requestId));
     try {
       await acceptRequest(requestId);
-      toast({title: "Request accepted", type:"foreground" });
+      toast.success("Request accepted" , { duration: 3000 });
     } catch (error) {
-      toast({title: "Error accepting request", type:"foreground" });
+      toast.error("Error accepting request");
     }
   };
 
@@ -47,9 +48,9 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
     setRequest?.(prevRequests => prevRequests.filter(req => req.id !== requestId));
     try {
       await rejectRequest(requestId);
-      toast({title: "Request rejected", type:"foreground" });
+      toast.success("Request rejected", { duration: 3000 });
     } catch {
-      toast({title: "Error rejecting request", type:"foreground" });
+      toast.error("Error rejecting request", { duration: 3000 });
     }
   };
 
