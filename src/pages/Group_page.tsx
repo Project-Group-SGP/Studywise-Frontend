@@ -11,7 +11,9 @@ import {
   PenTool,
   Crown,
   Calendar,
-  Menu,
+  ArrowRight,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import {
   Card,
@@ -37,6 +39,7 @@ import Session from "@/components/Session";
 import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 import Navbar from "@/components/Nav_bar";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const navItems = [
   { id: "members", icon: Users, label: "Study Buddies" },
@@ -78,6 +81,8 @@ export default function StudyGroupPage() {
   const [activeTab, setActiveTab] = useState("members");
   const [groupData, setGroupData] = useState(defaultGroupData);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+
   const { groupId } = useParams();
   const { user } = useAuth();
   const id = user?.id;
@@ -105,74 +110,118 @@ export default function StudyGroupPage() {
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       <Navbar />
       <main className="container mx-auto px-4 pt-24 pb-20">
-        <Card className="mb-8 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-50" />
-          <CardHeader className="relative">
+        <Card
+          className="mb-8 overflow-hidden relative group"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10"
+            animate={{
+              backgroundPosition: isHovered
+                ? ["0% 50%", "100% 50%"]
+                : ["100% 50%", "0% 50%"],
+            }}
+            transition={{
+              duration: 5,
+              ease: "linear",
+              repeat: Number.POSITIVE_INFINITY,
+            }}
+          />
+
+          <CardHeader className="relative space-y-4">
             {isLoading ? (
               <Skeleton className="h-8 w-3/4" />
             ) : (
-              <CardTitle className="text-3xl font-bold">
-                {groupData?.name}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  {groupData.name}
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    <Users className="h-4 w-4" />
+                    {groupData.members?.length || 0}
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    {new Date(groupData.createdAt).toLocaleDateString()}
+                  </Badge>
+                </div>
+              </div>
             )}
+
             {isLoading ? (
               <Skeleton className="h-4 w-full" />
             ) : (
-              <CardDescription>{groupData.description}</CardDescription>
+              <CardDescription className="text-base">
+                {groupData.description}
+              </CardDescription>
             )}
           </CardHeader>
-          <CardContent className="relative">
+
+          <CardContent className="relative space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center space-x-4">
                 {isLoading ? (
                   <Skeleton className="h-12 w-12 rounded-full" />
                 ) : (
-                  <Avatar className="h-12 w-12 ring-2 ring-primary ring-offset-2">
-                    <AvatarImage
-                      src={groupData.creator.avatarUrl}
-                      alt={groupData.creator.name}
-                    />
-                    <AvatarFallback>
-                      {groupData.creator.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <motion.div
+                    className="relative"
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <Avatar className="h-12 w-12 ring-2 ring-primary ring-offset-2 transition-all duration-200 group-hover:ring-secondary">
+                      <AvatarImage
+                        src={groupData.creator.avatarUrl}
+                        alt={groupData.creator.name}
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20">
+                        {groupData.creator.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Sparkles className="h-5 w-5 text-[hsl(var(--chart-4))] absolute -top-1 -right-1" />
+                  </motion.div>
                 )}
                 <div>
-                  <p className="text-sm font-medium">Group Owner</p>
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    Group Owner
+                    <ArrowRight className="h-4 w-4" />
+                  </p>
                   {isLoading ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground font-medium">
                       {groupData.creator.name}
                     </p>
                   )}
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium">Group Progress</p>
-                <div className="w-[200px] h-2 bg-secondary rounded-full mt-2 overflow-hidden">
-                  {isLoading ? (
-                    <Skeleton className="h-full w-full rounded-full" />
-                  ) : (
-                    <div
-                      className="h-full bg-primary rounded-full"
-                      style={{ width: `77%` }}
-                    />
-                  )}
-                </div>
-                {isLoading ? (
-                  <Skeleton className="h-4 w-16 mt-1 ml-auto" />
-                ) : (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {77}% Complete
-                  </p>
-                )}
-              </div>
+
+              <motion.div
+                className="flex items-center gap-2 bg-gradient-to-r from-primary/20 to-secondary/20 p-2 rounded-full"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Zap className="h-6 w-6 text-[hsl(var(--chart-1))]" />
+                <span className="font-semibold text-sm text-primary-foreground">
+                  Group Power
+                </span>
+              </motion.div>
             </div>
-            <div className="mt-4">
+
+            <div className="flex justify-between items-center pt-4 border-t border-border">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
+                  <Button
+                    variant="destructive"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
                     {isOwner ? "Delete Group" : "Leave Group"}
                   </Button>
                 </AlertDialogTrigger>
@@ -183,8 +232,8 @@ export default function StudyGroupPage() {
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       {isOwner
-                        ? "Are you sure you want to delete this group?"
-                        : "Are you sure you want to leave this group?"}
+                        ? "Are you sure you want to delete this group? This action cannot be undone."
+                        : "Are you sure you want to leave this group? You'll need to be invited back to rejoin."}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -199,12 +248,25 @@ export default function StudyGroupPage() {
                           navigate("/groups");
                         }
                       }}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       {isOwner ? "Delete" : "Leave"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/10"
+                >
+                  View Sessions
+                </Button>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Start Study Session
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -216,6 +278,7 @@ export default function StudyGroupPage() {
             {activeTab === "members" && <Member groupData={groupData} />}
             {activeTab === "chat" && groupId && <Chat groupId={groupId} />}
             {activeTab === "sessions" && <Session />}
+            {activeTab === "whiteboard" && <div>Whiteboard</div>}
           </>
         )}
       </main>
@@ -261,58 +324,58 @@ interface NavItemProps {
 const NavItem = ({ item, isActive, onClick }: NavItemProps) => {
   return (
     <button
-    aria-selected={isActive}
-    onClick={onClick}
-    className={cn(
-      "group relative flex flex-col items-center justify-center",
-      "w-16 p-2 rounded-lg transition-all duration-300",
-      isActive 
-        ? "bg-primary/10 text-primary" 
-        : "hover:bg-primary/5 text-muted-foreground",
-      "dark:text-gray-300 dark:hover:bg-primary/10 dark:active:bg-primary/20"
-    )}
-  >
-    {/* Tooltip */}
-    <div 
+      aria-selected={isActive}
+      onClick={onClick}
       className={cn(
-        "absolute top-[-40px] bg-black text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200",
-        "dark:bg-white dark:text-black"
+        "group relative flex flex-col items-center justify-center",
+        "w-16 p-2 rounded-lg transition-all duration-300",
+        isActive
+          ? "bg-primary/10 text-primary"
+          : "hover:bg-primary/5 text-muted-foreground",
+        "dark:text-gray-300 dark:hover:bg-primary/10 dark:active:bg-primary/20"
       )}
-      role="tooltip"
     >
-      {item.label}
-    </div>
-
-    {/* Icon */}
-    <div className={cn(
-      "p-2 rounded-full transition-all",
-      isActive 
-        ? "bg-primary/20 scale-110" 
-        : "group-hover:bg-primary/10",
-      "dark:group-hover:bg-primary/20"
-    )}>
-      <item.icon 
+      {/* Tooltip */}
+      <div
         className={cn(
-          "h-5 w-5", 
-          isActive 
-            ? "text-primary" 
-            : "text-muted-foreground dark:text-gray-400"
+          "absolute top-[-40px] bg-black text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+          "dark:bg-white dark:text-black"
         )}
-      />
-    </div>
+        role="tooltip"
+      >
+        {item.label}
+      </div>
 
-    {/* Active Indicator */}
-    {isActive && (
-      <motion.div 
-        layoutId="nav-active-dot"
+      {/* Icon */}
+      <div
         className={cn(
-          "h-1 w-1 bg-primary rounded-full mt-1",
-          "dark:bg-primary"
+          "p-2 rounded-full transition-all",
+          isActive ? "bg-primary/20 scale-110" : "group-hover:bg-primary/10",
+          "dark:group-hover:bg-primary/20"
         )}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      />
-    )}
-  </button>
+      >
+        <item.icon
+          className={cn(
+            "h-5 w-5",
+            isActive
+              ? "text-primary"
+              : "text-muted-foreground dark:text-gray-400"
+          )}
+        />
+      </div>
+
+      {/* Active Indicator */}
+      {isActive && (
+        <motion.div
+          layoutId="nav-active-dot"
+          className={cn(
+            "h-1 w-1 bg-primary rounded-full mt-1",
+            "dark:bg-primary"
+          )}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        />
+      )}
+    </button>
   );
 };
