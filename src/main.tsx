@@ -11,10 +11,12 @@ import StudyGroupPage from "./pages/Group_page.tsx";
 import Home from "./pages/Home.tsx";
 import NotFoundPage from "./pages/Notfoundpage.tsx";
 import { Toaster } from "sonner";
+import CustomCursor from "./components/CustomCursor.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <CustomCursor />
       <AuthProvider>
         <BrowserRouter>
           <Routes>

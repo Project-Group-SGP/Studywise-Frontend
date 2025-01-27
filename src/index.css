@@ -80,3 +80,18 @@ html {
   width: 0; /* Remove scrollbar space */
   background: transparent; /* Optional: just make scrollbar invisible */
 }
+
+* {
+  cursor: none !important; /* Added !important to ensure it overrides other styles */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Keep default cursor for interactive elements until hover */
+a, button, input, textarea, select {
+  cursor: none !important;
+}
