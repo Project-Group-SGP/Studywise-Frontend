@@ -11,8 +11,6 @@ import {
   PenTool,
   Crown,
   Calendar,
-  ArrowRight,
-  Sparkles,
   Zap,
 } from "lucide-react";
 import {
@@ -46,7 +44,7 @@ const navItems = [
   { id: "chat", icon: MessageSquare, label: "Group Chat" },
   { id: "sessions", icon: Calendar, label: "Study Time" },
   { id: "whiteboard", icon: PenTool, label: "Brain Space" },
-  { id: "achievements", icon: Crown, label: "Your Wins" },
+  // { id: "achievements", icon: Crown, label: "Your Wins" },
 ];
 
 const defaultGroupData: {
@@ -81,7 +79,7 @@ export default function StudyGroupPage() {
   const [activeTab, setActiveTab] = useState("members");
   const [groupData, setGroupData] = useState(defaultGroupData);
   const [isLoading, setIsLoading] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
+  // const [isHovered, setIsHovered] = useState(false);
 
   const { groupId } = useParams();
   const { user } = useAuth();
@@ -111,30 +109,14 @@ export default function StudyGroupPage() {
       <Navbar />
       <main className="container mx-auto px-4 pt-24 pb-20">
         <Card
-          className="mb-8 overflow-hidden relative group"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          className="mb-8 relative overflow-hidden"
         >
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10"
-            animate={{
-              backgroundPosition: isHovered
-                ? ["0% 50%", "100% 50%"]
-                : ["100% 50%", "0% 50%"],
-            }}
-            transition={{
-              duration: 5,
-              ease: "linear",
-              repeat: Number.POSITIVE_INFINITY,
-            }}
-          />
-
-          <CardHeader className="relative space-y-4">
+          <CardHeader className="space-y-4">
             {isLoading ? (
               <Skeleton className="h-8 w-3/4" />
             ) : (
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
+                <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
                   {groupData.name}
                 </CardTitle>
                 <div className="flex gap-2">
@@ -159,40 +141,30 @@ export default function StudyGroupPage() {
             {isLoading ? (
               <Skeleton className="h-4 w-full" />
             ) : (
-              <CardDescription className="text-base">
+              <CardDescription className="text-base text-muted-foreground">
                 {groupData.description}
               </CardDescription>
             )}
           </CardHeader>
 
-          <CardContent className="relative space-y-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <CardContent className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 {isLoading ? (
                   <Skeleton className="h-12 w-12 rounded-full" />
                 ) : (
-                  <motion.div
-                    className="relative"
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <Avatar className="h-12 w-12 ring-2 ring-primary ring-offset-2 transition-all duration-200 group-hover:ring-secondary">
-                      <AvatarImage
-                        src={groupData.creator.avatarUrl}
-                        alt={groupData.creator.name}
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20">
-                        {groupData.creator.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Sparkles className="h-5 w-5 text-[hsl(var(--chart-4))] absolute -top-1 -right-1" />
-                  </motion.div>
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage
+                      src={groupData.creator.avatarUrl}
+                      alt={groupData.creator.name}
+                    />
+                    <AvatarFallback>
+                      {groupData.creator.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
                 )}
                 <div>
-                  <p className="text-sm font-medium flex items-center gap-2">
-                    Group Owner
-                    <ArrowRight className="h-4 w-4" />
-                  </p>
+                  <p className="text-sm font-medium">Group Owner</p>
                   {isLoading ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
@@ -202,26 +174,20 @@ export default function StudyGroupPage() {
                   )}
                 </div>
               </div>
-
               <motion.div
-                className="flex items-center gap-2 bg-gradient-to-r from-primary/20 to-secondary/20 p-2 rounded-full"
+                className="flex items-center gap-2 bg-secondary p-2 rounded-full"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Zap className="h-6 w-6 text-[hsl(var(--chart-1))]" />
-                <span className="font-semibold text-sm text-primary-foreground">
-                  Group Power
-                </span>
+                <Zap className="h-6 w-6 text-primary" />
+                <span className="font-semibold text-sm">Group Power</span>
               </motion.div>
             </div>
 
-            <div className="flex justify-between items-center pt-4 border-t border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-border pt-4">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
+                  <Button variant="destructive" className="w-full sm:w-auto">
                     {isOwner ? "Delete Group" : "Leave Group"}
                   </Button>
                 </AlertDialogTrigger>
@@ -233,22 +199,17 @@ export default function StudyGroupPage() {
                     <AlertDialogDescription>
                       {isOwner
                         ? "Are you sure you want to delete this group? This action cannot be undone."
-                        : "Are you sure you want to leave this group? You'll need to be invited back to rejoin."}
+                        : "Are you sure you want to leave this group? You'll need an invite to rejoin."}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={async () => {
-                        if (isOwner) {
-                          await deleteGroup(groupData.id);
-                          navigate("/groups");
-                        } else {
-                          await leaveGroup(groupData.id);
-                          navigate("/groups");
-                        }
+                        if (isOwner) await deleteGroup(groupData.id);
+                        else await leaveGroup(groupData.id);
+                        navigate("/groups");
                       }}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       {isOwner ? "Delete" : "Leave"}
                     </AlertDialogAction>
@@ -257,20 +218,16 @@ export default function StudyGroupPage() {
               </AlertDialog>
 
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary/10"
-                >
+                <Button variant="outline" className="w-full sm:w-auto">
                   View Sessions
                 </Button>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button className="w-full sm:w-auto">
                   Start Study Session
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
-
         {isLoading ? (
           <Skeleton className="h-[400px] w-full" />
         ) : (

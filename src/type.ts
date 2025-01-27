@@ -44,6 +44,10 @@ export type Message = {
   groupId: string;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
+  user: {
+    name: string
+    avatar?: string
+  }
 };
 
 export type Session = {
