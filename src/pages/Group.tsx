@@ -128,9 +128,7 @@ export default function GroupsPage() {
           <p className="text-xl text-muted-foreground">
             Collaborate, Learn, and Grow Together
           </p>
-          <div className="max-w-md mx-auto">
-            <BeautifulIndianClock />
-          </div>
+          
           <motion.div
             variants={item}
             className="flex items-center justify-center gap-2 text-2xl font-medium text-primary"
@@ -140,7 +138,9 @@ export default function GroupsPage() {
             <Sparkles className="h-6 w-6" />
           </motion.div>
         </motion.div>
-
+        <div className="max-w-md mx-auto">
+            <BeautifulIndianClock />
+          </div>
         {/* Stats Grid */}
         <motion.div
           variants={item}

@@ -40,10 +40,10 @@ const MinimalistClock = () => {
       timeZone: "Asia/Kolkata",
       hour: "2-digit" as "2-digit",
       minute: "2-digit" as "2-digit",
-      hour12: false,
+      hour12: true,
     }
     const timeString = time.toLocaleTimeString("en-US", options)
-    return timeString.split(":")
+    return timeString.split(/[: ]/)
   }
 
   const getIndianDate = () => {
@@ -56,8 +56,8 @@ const MinimalistClock = () => {
     return time.toLocaleDateString("en-US", options)
   }
 
-  const [hours, minutes] = getIndianTime()
-  const isNight = Number.parseInt(hours) >= 18 || Number.parseInt(hours) < 6
+  const [hours, minutes, meridian] = getIndianTime()
+  const isNight = Number.parseInt(hours) >= 6 && meridian === "PM"
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
@@ -80,15 +80,18 @@ const MinimalistClock = () => {
 
         {/* Time Display */}
         <motion.div
-          className="text-4xl md:text-6xl font-mono tracking-[0.2em] font-bold text-center mb-2 text-primary dark:text-primary"
+          className="flex justify-center items-baseline text-4xl md:text-6xl font-mono tracking-[0.2em] font-bold text-center mb-2 text-primary dark:text-primary"
           animate={{
             textShadow: "0 0 15px hsl(var(--primary) / 0.2)",
           }}
           transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
         >
-          {hours}
+          <span>{hours}</span>
           <span className="animate-pulse">:</span>
-          {minutes}
+          <span>{minutes}</span>
+          <span className="ml-2 text-lg md:text-2xl font-semibold text-muted-foreground dark:text-muted-foreground">
+            {meridian}
+          </span>
         </motion.div>
 
         {/* Date Display */}
@@ -138,4 +141,3 @@ const MinimalistClock = () => {
 }
 
 export default MinimalistClock
-
