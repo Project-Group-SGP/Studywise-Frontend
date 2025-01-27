@@ -15,7 +15,8 @@ import CustomCursor from "./components/CustomCursor.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">\
+      {/* custom cursor */}
       <CustomCursor />
       <AuthProvider>
         <BrowserRouter>
