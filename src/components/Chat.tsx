@@ -1,16 +1,14 @@
-import type React from "react";
-import { useState, useEffect, useRef } from "react";
-import type { Socket } from "socket.io-client";
-import { io } from "socket.io-client";
+import React, { useState, useEffect, useRef } from "react";
+import { io, Socket } from "socket.io-client";
 import { useAuth } from "./providers/auth";
 import { getGroupMessages } from "@/lib/group-api";
-import { Send, Smile, Users, Book } from "lucide-react";
+import { Send, Smile, Users, Book, PhoneCall, Video, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import {
   Popover,
   PopoverContent,
@@ -73,7 +71,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]); // Added scrollToBottom to dependencies
+  }, [messages, scrollToBottom]);
 
   const fetchMessages = async () => {
     try {
@@ -140,23 +138,28 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     }, 1000);
   };
 
+
   const groupedMessages = groupMessagesByDate(messages);
 
   return (
     <div className="flex flex-col h-screen bg-background">
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-4">
           <Book className="w-6 h-6 text-primary" />
           <h1 className="text-2xl font-bold">Study Group Chat</h1>
         </div>
-        <div className="flex items-center space-x-2">
-          <Users className="w-5 h-5 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {messages.length} messages
-          </span>
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" >
+            <PhoneCall className="w-5 h-5 mr-2" /> Audio Call
+          </Button>
+          <Button variant="outline" >
+            <Video className="w-5 h-5 mr-2" /> Video Call
+          </Button>
         </div>
       </div>
 
+      {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
         <div className="space-y-6">
           {Object.entries(groupedMessages).map(([date, msgs]) => (
@@ -216,6 +219,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
       <Separator />
 
+      {/* Input Section */}
       <div className="p-4">
         <form
           onSubmit={handleSendMessage}
@@ -236,17 +240,20 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                 <Smile className="w-4 h-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="end" sideOffset={5}>
+            <PopoverContent align="end" className="p-0">
               <EmojiPicker
-                onEmojiClick={(e: any) =>
-                  setNewMessage((prev) => prev + e.emoji)
+                onEmojiClick={(emoji) =>
+                  setNewMessage((prev) => prev + emoji.emoji)
                 }
+                height={400}
+                width={300}
+                searchDisabled
+                emojiStyle={EmojiStyle.NATIVE}
               />
             </PopoverContent>
           </Popover>
           <Button type="submit">
-            <Send className="w-4 h-4 mr-2" />
-            Send
+            <Send className="w-4 h-4" />
           </Button>
         </form>
       </div>
