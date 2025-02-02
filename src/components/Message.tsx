@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { ExternalLink } from "lucide-react";
 
@@ -114,7 +115,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
               href={part.text}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline inline-flex items-center space-x-1"
+              className="text-black dark:text-white  hover:underline inline-flex items-center space-x-1 font-medium"
             >
               <span>{part.text}</span>
               <ExternalLink className="w-3 h-3" />
@@ -138,7 +139,7 @@ const LinkPreview: React.FC<{
 }> = ({ url, ogData, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="animate-pulse rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+      <div className="animate-pulse rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:bg-accent/50 transition-colors duration-200 ease-in-out">
         <div className="flex gap-3 p-3">
           <div className="w-[100px] h-[100px] bg-muted rounded"></div>
           <div className="flex-1 space-y-2 py-1">
@@ -163,27 +164,27 @@ const LinkPreview: React.FC<{
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:bg-accent/50 transition-colors"
+        className="block rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:bg-accent/50 transition-colors duration-200 ease-in-out"
       >
-        <div className="flex gap-3 p-3">
+        <div className="flex flex-col sm:flex-row gap-3 p-3">
           {ogData.image && (
-            <div className="relative w-[100px] h-[100px] flex-shrink-0 overflow-hidden rounded-md">
+            <div className="relative w-full sm:w-[100px] h-[140px] sm:h-[100px] flex-shrink-0 overflow-hidden rounded-md">
               <img
-                src={ogData.image}
+                src={ogData.image || "/placeholder.svg"}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
           )}
-          <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
             <div className="text-xs text-muted-foreground font-medium">
               {domain}
             </div>
-            <h3 className="font-semibold text-sm leading-tight truncate">
+            <h3 className="font-semibold text-sm leading-tight truncate text-primary">
               {ogData.title || "Visit Link"}
             </h3>
             {ogData.description && (
-              <p className="text-xs text-muted-foreground line-clamp-2">
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                 {ogData.description}
               </p>
             )}
@@ -198,7 +199,7 @@ const LinkPreview: React.FC<{
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block rounded-lg border bg-card text-card-foreground shadow-sm p-3 hover:bg-accent/50 transition-colors"
+        className="block rounded-lg border bg-card text-card-foreground shadow-sm p-3 hover:bg-accent/50 transition-colors duration-200 ease-in-out"
       >
         <div className="flex items-center space-x-2">
           <ExternalLink className="w-4 h-4 text-muted-foreground" />
