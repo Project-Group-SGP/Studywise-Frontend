@@ -17,7 +17,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format, isToday, isYesterday } from "date-fns";
-import { Message } from "@/type";
+import type { Message } from "@/type";
+import { MessageContent } from "./Message";
 
 const ChatRoom = ({ groupId }: { groupId: string }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -199,7 +200,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                           : "bg-secondary"
                       }`}
                     >
-                      {message.content}
+                      <MessageContent content={message.content} />
                     </div>
                   </div>
                 </div>
