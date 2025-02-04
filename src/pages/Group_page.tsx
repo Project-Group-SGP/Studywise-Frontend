@@ -64,7 +64,7 @@ const defaultGroupData: GroupData = {
 
 export default function StudyGroupPage() {
   const [activeTab, setActiveTab] = useState("members");
-  const [groupData, setGroupData] = useState  (defaultGroupData);
+  const [groupData, setGroupData] = useState(defaultGroupData);
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(true);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -80,7 +80,7 @@ export default function StudyGroupPage() {
       setIsLoading(true);
       try {
         if (groupId) {
-          const data : GroupData = await getGroupdetails(groupId);
+          const data: GroupData = await getGroupdetails(groupId);
           setGroupData(data);
         }
       } catch (error) {
@@ -103,148 +103,158 @@ export default function StudyGroupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br relative from-background to-secondary/20">
       <Navbar />
-      <main className="container mx-auto px-4 pt-20 pb-20">
-        <motion.div
-          initial={false}
-          animate={hasScrolled ? "collapsed" : "expanded"}
-          className="sticky top-16 mb-4"
-        >
-          <Card className="backdrop-blur-md bg-background/95">
-            <CardHeader className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {isLoading ? (
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                  ) : (
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage
-                        src={groupData.creator.avatarUrl}
-                        alt={groupData.creator.name}
-                      />
-                      <AvatarFallback>
-                        {groupData.creator.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div>
+      <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
+        <main className="container mx-auto px-4 pt-20 pb-20">
+          <motion.div
+            initial={false}
+            animate={hasScrolled ? "collapsed" : "expanded"}
+            className="sticky top-16 mb-4"
+          >
+            <Card className="backdrop-blur-md bg-background/95">
+              <CardHeader className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
                     {isLoading ? (
-                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-10 w-10 rounded-full" />
                     ) : (
-                      <CardTitle className="text-xl">{groupData.name}</CardTitle>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src={groupData.creator.avatarUrl}
+                          alt={groupData.creator.name}
+                        />
+                        <AvatarFallback>
+                          {groupData.creator.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
-                    <div className="flex gap-2 mt-1">
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {groupData.members?.length || 0}
-                      </Badge>
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Zap className="h-3 w-3" />
-                        Active
-                      </Badge>
+                    <div>
+                      {isLoading ? (
+                        <Skeleton className="h-6 w-32" />
+                      ) : (
+                        <CardTitle className="text-xl">
+                          {groupData.name}
+                        </CardTitle>
+                      )}
+                      <div className="flex gap-2 mt-1">
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          <Users className="h-3 w-3" />
+                          {groupData.members?.length || 0}
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          <Zap className="h-3 w-3" />
+                          Active
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                >
-                  {isExpanded ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsExpanded(!isExpanded)}
                   >
-                    <CardDescription className="mt-4 text-base">
-                      {groupData.description}
-                    </CardDescription>
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
 
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveTab("sessions")}
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        View Sessions
-                      </Button>
-                      <Button size="sm">
-                        <Zap className="h-4 w-4 mr-2" />
-                        Start Study Session
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
-                            {isOwner ? "Delete Group" : "Leave Group"}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <CardDescription className="mt-4 text-base">
+                        {groupData.description}
+                      </CardDescription>
+
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setActiveTab("sessions")}
+                        >
+                          <Calendar className="h-4 w-4 mr-2" />
+                          View Sessions
+                        </Button>
+                        <Button size="sm">
+                          <Zap className="h-4 w-4 mr-2" />
+                          Start Study Session
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
                               {isOwner ? "Delete Group" : "Leave Group"}
-                            </AlertDialogTitle>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={async () => {
-                                if (isOwner) await deleteGroup(groupData.id);
-                                else await leaveGroup(groupData.id);
-                                navigate("/groups");
-                              }}
-                            >
-                              {isOwner ? "Delete" : "Leave"}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </CardHeader>
-          </Card>
-        </motion.div>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {isOwner ? "Delete Group" : "Leave Group"}
+                              </AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={async () => {
+                                  if (isOwner) await deleteGroup(groupData.id);
+                                  else await leaveGroup(groupData.id);
+                                  navigate("/groups");
+                                }}
+                              >
+                                {isOwner ? "Delete" : "Leave"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </CardHeader>
+            </Card>
+          </motion.div>
 
-        {/* Main Content */}
-        <div className="mt-4">
-          {isLoading ? (
-            <Skeleton className="h-[400px] w-full" />
-          ) : (
-            <>
-              {activeTab === "members" && <Member groupData={groupData} />}
-              {activeTab === "chat" && groupId && <Chat groupId={groupId} />}
-              {activeTab === "sessions" && <Session />}
-              {activeTab === "whiteboard" && <div>Whiteboard</div>}
-            </>
-          )}
-        </div>
-
-        {/* Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4">
-          <div className="bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-lg px-2 py-1 flex items-center space-x-2">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.id}
-                item={item}
-                isActive={activeTab === item.id}
-                onClick={() => setActiveTab(item.id)}
-              />
-            ))}
+          {/* Main Content */}
+          <div className="mt-4">
+            {isLoading ? (
+              <Skeleton className="h-[400px] w-full" />
+            ) : (
+              <>
+                {activeTab === "members" && <Member groupData={groupData} />}
+                {activeTab === "chat" && groupId && <Chat groupId={groupId} />}
+                {activeTab === "sessions" && <Session />}
+                {activeTab === "whiteboard" && <div>Whiteboard</div>}
+              </>
+            )}
           </div>
-        </nav>
-      </main>
+
+          {/* Navigation */}
+          <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4">
+            <div className="bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-lg px-2 py-1 flex items-center space-x-2">
+              {navItems.map((item) => (
+                <NavItem
+                  key={item.id}
+                  item={item}
+                  isActive={activeTab === item.id}
+                  onClick={() => setActiveTab(item.id)}
+                />
+              ))}
+            </div>
+          </nav>
+        </main>
+      </div>
     </div>
   );
 }
