@@ -128,7 +128,7 @@ export default function GroupsPage() {
           <p className="text-xl text-muted-foreground">
             Collaborate, Learn, and Grow Together
           </p>
-          
+
           <motion.div
             variants={item}
             className="flex items-center justify-center gap-2 text-2xl font-medium text-primary"
@@ -139,8 +139,8 @@ export default function GroupsPage() {
           </motion.div>
         </motion.div>
         <div className="max-w-md mx-auto">
-            <BeautifulIndianClock />
-          </div>
+          <BeautifulIndianClock />
+        </div>
         {/* Stats Grid */}
         <motion.div
           variants={item}
@@ -218,28 +218,30 @@ export default function GroupsPage() {
           </div>
         </motion.div>
 
-        {/* Groups Display */}
-        <motion.div variants={item} className="space-y-8">
-          {(activeTab === "all" || activeTab === "created") && (
-            <UserGroupSection
-              title="Your Created Groups"
-              groups={filteredCreatedGroups}
-              isLoading={isLoading}
-              error={error}
-              request={request}
-              setRequest={setRequest}
-            />
-          )}
-          {(activeTab === "all" || activeTab === "joined") && (
-            <GroupSection
-              title="Groups You're a Member Of"
-              groups={filteredMemberGroups}
-              isLoading={isLoading}
-              error={error}
-              isOwner={false}
-            />
-          )}
-        </motion.div>
+        <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
+          {/* Groups Display */}
+          <motion.div variants={item} className="space-y-8 w-full">
+            {(activeTab === "all" || activeTab === "created") && (
+              <UserGroupSection
+                title="Your Created Groups"
+                groups={filteredCreatedGroups}
+                isLoading={isLoading}
+                error={error}
+                request={request}
+                setRequest={setRequest}
+              />
+            )}
+            {(activeTab === "all" || activeTab === "joined") && (
+              <GroupSection
+                title="Groups You're a Member Of"
+                groups={filteredMemberGroups}
+                isLoading={isLoading}
+                error={error}
+                isOwner={false}
+              />
+            )}
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   );

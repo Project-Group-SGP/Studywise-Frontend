@@ -19,7 +19,7 @@ export function UserGroupSection({
   isLoading,
   error,
   request,
-  setRequest
+  setRequest,
 }: GroupSectionProps) {
   // Create a map to count requests by groupId
   const requestByGroupId = request.reduce((acc, req) => {
@@ -36,9 +36,9 @@ export function UserGroupSection({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -49,9 +49,9 @@ export function UserGroupSection({
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 12
-      }
-    }
+        damping: 12,
+      },
+    },
   };
 
   const totalRequests = request.length;
@@ -72,7 +72,7 @@ export function UserGroupSection({
           {totalRequests > 0 && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" />
-              {totalRequests} Pending Request{totalRequests !== 1 ? 's' : ''}
+              {totalRequests} Pending Request{totalRequests !== 1 ? "s" : ""}
             </div>
           )}
         </div>
@@ -82,9 +82,9 @@ export function UserGroupSection({
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(3)].map((_, index) => (
-            <Skeleton 
-              key={index} 
-              className="h-[250px] rounded-xl bg-gradient-to-br from-primary/5 to-transparent animate-pulse" 
+            <Skeleton
+              key={index}
+              className="h-[250px] rounded-xl bg-gradient-to-br from-primary/5 to-transparent animate-pulse"
             />
           ))}
         </div>
@@ -97,14 +97,14 @@ export function UserGroupSection({
           <p className="text-red-500">{error}</p>
         </motion.div>
       ) : groups.length > 0 ? (
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {groups.map((group) => (
-            <motion.div 
+            <motion.div
               key={group.id}
               variants={itemVariants}
               className="h-full"
