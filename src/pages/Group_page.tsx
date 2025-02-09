@@ -39,6 +39,8 @@ import Session from "@/components/Session";
 import Navbar from "@/components/Nav_bar";
 import { motion, AnimatePresence } from "framer-motion";
 import { GroupData } from "@/type";
+import { SessionTimer } from "@/components/SessionTimer";
+import { useSession } from "@/contexts/SessionContext";
 
 const navItems = [
   { id: "members", icon: Users, label: "Study Buddies" },
@@ -74,6 +76,7 @@ export default function StudyGroupPage() {
   const id = user?.id;
   const navigate = useNavigate();
   const isOwner = groupData.creatorId === id;
+  const { activeSessions, endSession } = useSession();
 
   useEffect(() => {
     async function fetchGroupData() {
@@ -103,6 +106,16 @@ export default function StudyGroupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br relative from-background to-secondary/20">
       <Navbar />
+      
+      {/* Add Session Timers here - they'll be draggable anywhere */}
+      {activeSessions.length > 0 && activeSessions.map((session) => (
+        <SessionTimer
+          key={session.id}
+          session={session}
+          onClose={() => endSession(session.id)}
+        />
+      ))}
+
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
         <main className="container mx-auto px-4 pt-20 pb-20">
           <motion.div

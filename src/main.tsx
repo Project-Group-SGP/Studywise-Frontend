@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { ProtectedRoute } from "./components/protectedRoutes.tsx";
 import { AuthProvider } from "./components/providers/auth.tsx";
 import { ThemeProvider } from "./components/providers/theme-provider.tsx";
+import { SessionProvider } from "./contexts/SessionContext.tsx";
 import RegisterServiceWorker from "./components/RegisterServiceWorker.tsx";
 import "./index.css";
 import GroupsPage from "./pages/Group.tsx";
@@ -19,31 +20,33 @@ createRoot(document.getElementById("root")!).render(
       {/* custom cursor */}
       <CustomCursor />
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/groups"
-              element={
-                <ProtectedRoute>
-                  <RegisterServiceWorker />
-                  <GroupsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/groups/:groupId"
-              element={
-                <ProtectedRoute>
-                  <RegisterServiceWorker />
-                  <StudyGroupPage />
-                </ProtectedRoute>
-              }
-            />
+        <SessionProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route
+                path="/groups"
+                element={
+                  <ProtectedRoute>
+                    <RegisterServiceWorker />
+                    <GroupsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/groups/:groupId"
+                element={
+                  <ProtectedRoute>
+                    <RegisterServiceWorker />
+                    <StudyGroupPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </BrowserRouter>
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </BrowserRouter>
+        </SessionProvider>
       </AuthProvider>
       <Toaster closeButton richColors />
     </ThemeProvider>

@@ -50,11 +50,18 @@ export type Message = {
   }
 };
 
-export type Session = {
+export interface Session {
   id: string;
-  name: string;
-  description?: string; // Optional
-  groupId: string;
-  creatorID: string;
-  createdAt: string; // ISO date string
-};
+  title: string;
+  date: string;
+  description: string;
+  isActive?: boolean;
+  startedAt?: string;
+  maxParticipants?: number;
+  prerequisites?: string;
+  meetingLink?: string;
+  createdBy: {
+    id: string;
+    name: string;
+  };
+}

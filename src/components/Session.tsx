@@ -1,116 +1,247 @@
-import { Plus } from "lucide-react";
+import { Plus, Play, CalendarIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useSession } from "@/contexts/SessionContext";
 import { useState } from "react";
 
 
-const groupData = {
-  id: '1',
-  name: 'Quantum Physics Explorers',
-  description: 'A group dedicated to exploring the fascinating world of quantum physics.',
-  owner: {
-    id: 'owner1',
-    name: 'Dr. Alice Cooper',
-    avatar: '/api/placeholder/150/150'
-  },
-  members: [
-    { id: 'member1', name: 'Bob Smith', avatar: '/api/placeholder/150/150', points: 120 },
-    { id: 'member2', name: 'Charlie Brown', avatar: '/api/placeholder/150/150', points: 95 },
-    { id: 'member3', name: 'Diana Prince', avatar: '/api/placeholder/150/150', points: 150 },
-    { id: 'member4', name: 'Ethan Hunt', avatar: '/api/placeholder/150/150', points: 80 },
-  ],
-  chatMessages: [
-    { id: 'msg1', sender: 'Bob Smith', content: 'Hey everyone, excited for our next session!', timestamp: '2023-06-10T10:00:00Z' },
-    { id: 'msg2', sender: 'Dr. Alice Cooper', content: 'We\'ll be covering quantum entanglement.', timestamp: '2023-06-10T10:05:00Z' },
-    { id: 'msg3', sender: 'Charlie Brown', content: 'Can\'t wait to learn more about it!', timestamp: '2023-06-10T10:10:00Z' },
-  ],
-  upcomingSessions: [
-    { id: 'session1', title: 'Quantum Entanglement Basics', date: '2023-06-15T14:00:00Z', duration: 90 },
-    { id: 'session2', title: 'Schrödinger\'s Cat Paradox', date: '2023-06-20T15:00:00Z', duration: 120 },
-  ],
-  groupProgress: 65,
-};
+interface SessionFormData {
+  title: string;
+  description: string;
+  date: Date;
+  time: string;
+  maxParticipants?: number;
+  prerequisites?: string;
+  meetingLink?: string;
+}
+
 
 const Session = () => {
+  const { sessions, activeSessions, addSession, startSession, endSession } = useSession();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [formData, setFormData] = useState<SessionFormData>({
+    title: "",
+    description: "",
+    date: new Date(),
+    time: format(new Date(), "HH:mm"),
+  });
 
-  const [sessions, setSessions] = useState(groupData.upcomingSessions);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const addSession = (title : string, date: string, duration: number) => {
-    const newSession = {
-      id: `session${sessions.length + 1}`,
-      title,
-      date,
-      duration
-    };
-    setSessions([...sessions, newSession]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date) return;
+
+    const [hours, minutes] = formData.time.split(':');
+    const sessionDate = new Date(date);
+    sessionDate.setHours(parseInt(hours), parseInt(minutes));
+
+    addSession({
+      title: formData.title,
+      date: sessionDate.toISOString(),
+      description: formData.description,
+      prerequisites: formData.prerequisites,
+      // meetingLink: formData.meetingLink,
+      createdBy: {
+        id: 'current-user-id', // Replace with actual user ID
+        name: 'Current User', // Replace with actual user name
+      },
+    });
+
+    setIsDialogOpen(false);
+    setFormData({
+      title: "",
+      description: "",
+      date: new Date(),
+      time: format(new Date(), "HH:mm"),
+    });
   };
 
   return (
-    <Card>
-    <CardHeader>
-      <CardTitle>Study Sessions</CardTitle>
-      <CardDescription>Plan your study time together!</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <ScrollArea className="h-[300px] mb-4">
-        <div className="space-y-4">
-          {sessions.map((session) => (
-            <Card key={session.id}>
-              <CardHeader>
-                <CardTitle>{session.title}</CardTitle>
-                <CardDescription>
-                  {new Date(session.date).toLocaleString()} ({session.duration} minutes)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      </ScrollArea>
-    </CardContent>
-    <CardFooter>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Study Session
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule Study Session</DialogTitle>
-            <DialogDescription>Plan your next study session!</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">Topic</Label>
-              <Input id="title" className="col-span-3" />
+    <div className="relative">
+      <Card>
+        <CardHeader>
+          <CardTitle>Study Sessions</CardTitle>
+          <CardDescription>Plan your study time together!</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[400px] mb-4">
+            <div className="space-y-4">
+              {sessions.map((session) => (
+                <Card key={session.id} className="border-l-4 border-l-primary">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{session.title}</CardTitle>
+                        <CardDescription>
+                          {format(new Date(session.date), "PPP 'at' p")}
+                        </CardDescription>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {session.description}
+                        </p>
+                        {session.prerequisites && (
+                          <p className="mt-1 text-sm">
+                            <strong>Prerequisites:</strong> {session.prerequisites}
+                          </p>
+                        )}
+                        {session.maxParticipants && (
+                          <p className="mt-1 text-sm">
+                            <strong>Max Participants:</strong> {session.maxParticipants}
+                          </p>
+                        )}
+                      </div>
+                      {!session.isActive && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => startSession(session.id)}
+                          className="hover:scale-105 transition-transform"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Start Session
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="date" className="text-right">When?</Label>
-              <Input id="date" type="datetime-local" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="duration" className="text-right">How Long?</Label>
-              <Input id="duration" type="number" className="col-span-3" placeholder="Duration in minutes" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit" onClick={() => {
-              const title = (document.getElementById('title') as HTMLInputElement).value;
-              const date = (document.getElementById('date') as HTMLInputElement).value;
-              const duration = parseInt((document.getElementById('duration') as HTMLInputElement).value);
-              addSession(title, date, duration);
-            }}>Schedule It!</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </CardFooter>
-  </Card>
-  )
-}
+          </ScrollArea>
+        </CardContent>
+        <CardFooter>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create New Session
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Create Study Session</DialogTitle>
+                  <DialogDescription>
+                    Plan a new study session for your group
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Session Title</Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Advanced Calculus Review"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label>Date & Time</Label>
+                    <div className="flex gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-[240px] justify-start text-left font-normal",
+                              !date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={setDate}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <Input
+                        type="time"
+                        name="time"
+                        value={formData.time}
+                        onChange={handleInputChange}
+                        className="w-[120px]"
+                      />
+                    </div>
+                  </div>
 
-export default Session
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="What will you study in this session?"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="prerequisites">Prerequisites (Optional)</Label>
+                    <Input
+                      id="prerequisites"
+                      name="prerequisites"
+                      value={formData.prerequisites}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Basic calculus knowledge"
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="maxParticipants">Max Participants (Optional)</Label>
+                    <Input
+                      type="number"
+                      id="maxParticipants"
+                      name="maxParticipants"
+                      value={formData.maxParticipants}
+                      onChange={handleInputChange}
+                      min="1"
+                      placeholder="Leave empty for unlimited"
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="meetingLink">Meeting Link (Optional)</Label>
+                    <Input
+                      id="meetingLink"
+                      name="meetingLink"
+                      value={formData.meetingLink}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Zoom or Google Meet link"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Create Session</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+export default Session;
