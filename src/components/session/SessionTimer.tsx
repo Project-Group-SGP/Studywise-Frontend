@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react";
-import { Card } from "./ui/card";
+import { Card } from "../ui/card";
 import { X, GripHorizontal, Minimize2, Maximize2, StopCircle } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { ScrollArea } from "./ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface SessionTimerProps {
   session: {
     id: string;
-    title: string;
+    name: string;
     startedAt?: string;
     participants?: Array<{
-      id: string;
-      name: string;
-      avatarUrl?: string;
+      socketId: string;
+      userId: string;
+      userName: string;
+      joinedAt: number;
     }>;
   };
   onClose: () => void;
@@ -75,7 +76,7 @@ export const SessionTimer = ({ session, onClose }: SessionTimerProps) => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <GripHorizontal className="h-4 w-4 text-primary-foreground/70" />
-              {!isMinimized && <span className="text-sm font-medium">{session.title}</span>}
+              {!isMinimized && <span className="text-sm font-medium">{session.name}</span>}
             </div>
             <div className="flex items-center gap-1">
               <Button
@@ -108,16 +109,17 @@ export const SessionTimer = ({ session, onClose }: SessionTimerProps) => {
               </div>
               
               <div className="mt-4 mb-2">
-                <h4 className="text-sm font-medium mb-2">Participants</h4>
+                <h4 className="text-sm font-medium mb-2">
+                  Participants ({session.participants?.length || 0})
+                </h4>
                 <ScrollArea className="h-20">
                   <div className="flex flex-wrap gap-2">
-                    {participants.map((participant) => (
-                      <div key={participant.id} className="flex items-center gap-1">
+                    {session.participants?.map((participant) => (
+                      <div key={participant.userId} className="flex items-center gap-1">
                         <Avatar className="h-6 w-6">
-                          <AvatarImage src={participant.avatarUrl} />
-                          <AvatarFallback>{participant.name[0]}</AvatarFallback>
+                          <AvatarFallback>{participant.userName[0]}</AvatarFallback>
                         </Avatar>
-                        <span className="text-xs">{participant.name}</span>
+                        <span className="text-xs">{participant.userName}</span>
                       </div>
                     ))}
                   </div>

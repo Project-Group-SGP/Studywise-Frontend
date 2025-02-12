@@ -18,7 +18,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">\
       {/* custom cursor */}
-      <CustomCursor />
+      {/* <CustomCursor /> */}
       <AuthProvider>
         <SessionProvider>
           <BrowserRouter>

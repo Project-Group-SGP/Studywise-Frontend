@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "./providers/auth";
+import { useAuth } from "../providers/auth";
 import { getGroupMessages } from "@/lib/group-api";
 import {
   Send,
@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import {
   Popover,
