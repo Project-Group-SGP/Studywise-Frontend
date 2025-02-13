@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import { Card } from "../ui/card";
-import { X, GripHorizontal, Minimize2, Maximize2, StopCircle } from "lucide-react";
+import {  GripHorizontal, Minimize2, Maximize2, StopCircle, CheckCircle, Zap } from "lucide-react";
 import { Button } from "../ui/button";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 interface SessionTimerProps {
   session: {
     id: string;
     name: string;
     startedAt?: string;
+    endedAt?: string;
+    creatorID: string;
     participants?: Array<{
       socketId: string;
       userId: string;
@@ -19,36 +23,52 @@ interface SessionTimerProps {
     }>;
   };
   onClose: () => void;
+  onLeave: () => void;
+  currentUserId: string;
 }
 
-export const SessionTimer = ({ session, onClose }: SessionTimerProps) => {
+export const SessionTimer = ({ session, onClose, onLeave, currentUserId }: SessionTimerProps) => {
   const [elapsed, setElapsed] = useState<number>(0);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [participants, setParticipants] = useState(session.participants || []);
 
-  useEffect(() => {
-    // TODO: API - Fetch real-time session participants
-    // GET /api/sessions/{sessionId}/participants
-    // Should return array of participants with their details
-    // Consider using WebSocket for real-time updates
-  }, [session.id]);
+  const isCreator = currentUserId === session.creatorID;
+
+  console.log ( "currentUSer :  " , currentUserId);
+  console.log( "creatorID :  " , session.creatorID);
+  
+  
 
   useEffect(() => {
     if (!session.startedAt) return;
     
+    // If session is ended, calculate final elapsed time and cleanup
+    if (session.endedAt) {
+      const start = new Date(session.startedAt).getTime();
+      const end = new Date(session.endedAt).getTime();
+      setElapsed(end - start);
+      
+      // If not creator, trigger leave
+      if (!isCreator) {
+        onLeave();
+      }
+      return;
+    }
+    
+    // Calculate initial elapsed time for ongoing session
+    const start = new Date(session.startedAt).getTime();
+    const now = new Date().getTime();
+    setElapsed(now - start);
+    
+    // Set up the interval for ongoing updates
     const interval = setInterval(() => {
       const start = new Date(session.startedAt!).getTime();
       const now = new Date().getTime();
       const newElapsed = now - start;
       setElapsed(newElapsed);
-
-      // TODO: API - Update session duration in backend
-      // POST /api/sessions/{sessionId}/duration
-      // Payload: { duration: newElapsed }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [session.startedAt]);
+  }, [session.startedAt, session.endedAt, isCreator, onLeave]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor((ms / 1000) % 60);
@@ -91,14 +111,6 @@ export const SessionTimer = ({ session, onClose }: SessionTimerProps) => {
                   <Minimize2 className="h-4 w-4" />
                 )}
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 hover:bg-primary-foreground/20"
-                onClick={onClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
           </div>
           
@@ -126,23 +138,29 @@ export const SessionTimer = ({ session, onClose }: SessionTimerProps) => {
                 </ScrollArea>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mt-4">
                 <div className="text-xs text-primary-foreground/70">
                   Started at {session.startedAt && new Date(session.startedAt).toLocaleTimeString()}
+                  {session.endedAt && (
+                    <div>
+                      Ended at {new Date(session.endedAt).toLocaleTimeString()}
+                    </div>
+                  )}
                 </div>
-                <Button 
-                  variant="secondary" 
-                  className="w-full mt-2 hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={() => {
-                    // TODO: API - End session
-                    // POST /api/sessions/{sessionId}/end
-                    // Should update session status and notify participants
-                    onClose();
-                  }}
-                >
-                  <StopCircle className="h-4 w-4 mr-2" />
-                  End Session
-                </Button>
+                
+                {!session.endedAt && (
+                  <Button 
+                    variant="secondary" 
+                    className={cn(
+                      "w-full",
+                      isCreator && "hover:bg-destructive hover:text-destructive-foreground"
+                    )}
+                    onClick={isCreator ? onClose : onLeave}
+                  >
+                    <StopCircle className="h-4 w-4 mr-2" />
+                    {isCreator ? 'End Session' : 'Leave Session'}
+                  </Button>
+                )}
               </div>
             </>
           )}

@@ -5,21 +5,25 @@ interface SessionListProps {
   title: string;
   sessions: SessionType[];
   onEdit: (session: SessionType) => void;
-  onDelete: (id: string) => void;
+  onDelete: (sessionId: string) => void;
+  onEndSession: (sessionId: string) => Promise<void>;
+  isSessionCreator: (session: SessionType) => boolean;
 }
 
 export const SessionList = ({ title, sessions, onEdit, onDelete }: SessionListProps) => {
   return (
     <>
       <h3 className="font-semibold mb-4">{title}</h3>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sessions.map((session) => (
-          <SessionCard
-            key={session.id}
-            session={session}
-            onEdit={() => onEdit(session)}
-            onDelete={() => onDelete(session.id)}
-          />
+          <div className="w-full" key={session.id}>
+            <SessionCard
+              session={session}
+              onEdit={() => onEdit(session)}
+              onDelete={() => onDelete(session.id)}
+            >
+            </SessionCard>
+          </div>
         ))}
       </div>
     </>

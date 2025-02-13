@@ -1,27 +1,10 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate, useParams } from "react-router";
-import { getGroupdetails, leaveGroup, deleteGroup } from "@/lib/group-api";
-import { cn } from "@/lib/utils";
-import {
-  Users,
-  MessageSquare,
-  PenTool,
-  Calendar,
-  Zap,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import Chat from "@/components/chat/Chat";
+import { Dock, DockIcon } from "@/components/magicui/dock";
+import Member from "@/components/member";
+import Navbar from "@/components/Nav_bar";
 import { useAuth } from "@/components/providers/auth";
+import Session from "@/components/session/Session";
+import { SessionTimer } from "@/components/session/SessionTimer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,16 +15,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import Member from "@/components/member";
-import Chat from "@/components/chat/Chat";
-import Session from "@/components/session/Session";
-import Navbar from "@/components/Nav_bar";
-import { motion, AnimatePresence } from "framer-motion";
-import { GroupData } from "@/type";
-import { SessionTimer } from "@/components/session/SessionTimer";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/contexts/SessionContext";
-import { Dock, DockIcon } from "@/components/magicui/dock";
+import { deleteGroup, getGroupdetails, leaveGroup } from "@/lib/group-api";
+import { cn } from "@/lib/utils";
+import { GroupData } from "@/type";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  PenTool,
+  Users,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 const navItems = [
   { id: "members", icon: Users, label: "Study Buddies" },
@@ -77,7 +76,7 @@ export default function StudyGroupPage() {
   const id = user?.id;
   const navigate = useNavigate();
   const isOwner = groupData.creatorId === id;
-  const { activeSessions, endSession } = useSession();
+  const { activeSessions, endSession, leaveSession } = useSession();
 
   useEffect(() => {
     async function fetchGroupData() {
@@ -104,18 +103,27 @@ export default function StudyGroupPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    console.log("Active Sessions:", activeSessions);
+  }, [activeSessions]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br relative from-background to-secondary/20">
       <Navbar />
       
       {/* Add Session Timers here - they'll be draggable anywhere */}
-      {activeSessions.length > 0 && activeSessions.map((session) => (
-        <SessionTimer
-          key={session.id}
-          session={session}
-          onClose={() => endSession(session.id)}
-        />
-      ))}
+      {activeSessions.length > 0 && activeSessions.map((session) => {
+        console.log("Session being rendered:", session);
+        return (
+          <SessionTimer
+            key={session.id}
+            session={session}
+            onClose={() => endSession(session.id)}
+            onLeave={() => leaveSession(session.id)}
+            currentUserId={user?.id || ''}
+          />
+        );
+      })}
 
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
         <main className="container mx-auto px-4 pt-20 pb-20">

@@ -12,7 +12,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "../ui/card";
@@ -28,16 +27,16 @@ import { ScrollArea } from "../ui/scroll-area";
 import { SessionForm } from "./SessionForm";
 import { SessionList } from "./SessionList";
 
+// form data
 interface SessionFormData {
   title: string;
   description: string;
   date: Date;
   time: string;
-  maxParticipants?: number;
   prerequisites?: string;
-  meetingLink?: string;
 }
 
+// session
 export interface SessionType {
   id: string;
   name: string;
@@ -50,10 +49,6 @@ export interface SessionType {
   groupId: string;
   creatorID: string;
   createdAt: string;
-  creator: {
-    id: string;
-    name: string;
-  };
 }
 
 const Session = () => {
@@ -63,20 +58,28 @@ const Session = () => {
     fetchGroupSessions,
     deleteSession,
     editSession,
+    endSession,
   } = useSession();
   const { user } = useAuth();
+  console.log(user);
+  console.log(sessions);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [date, setDate] = useState<Date>();
+  const date  =  new Date();
+
   const [formData, setFormData] = useState<SessionFormData>({
     title: "",
     description: "",
     date: new Date(),
     time: format(new Date(), "HH:mm"),
   });
+  // Edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  // Editing session
   const [editingSession, setEditingSession] = useState<SessionType | null>(
     null
   );
+  // Form errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   // Get the groupId from the URL
   const { groupId } = useParams<{ groupId: string }>();
@@ -96,25 +99,26 @@ const Session = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!groupId) return;
 
     // Check for empty required fields first
     const errors: Record<string, string> = {};
-    
+
     if (!formData.title.trim()) {
       errors.title = "Title is required";
     }
-    
+
     if (!formData.description.trim()) {
       errors.description = "Description is required";
     }
-    
+
     if (!formData.date) {
       errors.date = "Please select a date";
     }
-    
+
     if (!formData.time) {
       errors.time = "Please select a time";
     }
@@ -138,16 +142,25 @@ const Session = () => {
         time: formData.time,
         prerequisites: formData.prerequisites,
       });
-      
+
+      // Reset form errors
       setFormErrors({});
 
-      await addSession({
-        name: formData.title,
-        time: sessionDate.toISOString(),
-        description: formData.description,
-        prerequisites: formData.prerequisites,
-        groupId: groupId,
-      });
+      //`addSession` function to create a new session
+      try {
+        await addSession({
+          name: formData.title,
+          time: sessionDate.toISOString(),
+          description: formData.description,
+          prerequisites: formData.prerequisites,
+          groupId: groupId,
+        });
+      } catch (error) {
+        toast.error("Failed to create session" + error);
+        console.error("Error creating session:", error);
+        throw error;
+        return;
+      }
 
       toast.success("Session created successfully");
       setIsDialogOpen(false);
@@ -186,13 +199,14 @@ const Session = () => {
   );
 
   const handleEdit = (session: SessionType) => {
+    const sessionDate = new Date(session.time);
     setEditingSession(session);
     setFormData({
       title: session.name,
       description: session.description || "",
-      date: new Date(session.time),
-      time: format(new Date(session.time), "HH:mm"),
-      prerequisites: session.prerequisites,
+      date: sessionDate,
+      time: format(sessionDate, "HH:mm"),
+      prerequisites: session.prerequisites || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -200,35 +214,79 @@ const Session = () => {
   // Handle edit submit
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !groupId || !editingSession) return;
+    if (!groupId || !editingSession) return;
 
-    const [hours, minutes] = formData.time.split(":");
-    const sessionDate = new Date(date);
-    sessionDate.setHours(parseInt(hours), parseInt(minutes));
+    // Check for empty required fields first
+    const errors: Record<string, string> = {};
+    
+    if (!formData.title.trim()) {
+      errors.title = "Title is required";
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = "Description is required";
+    }
+    
+    if (!formData.date) {
+      errors.date = "Please select a date";
+    }
+    
+    if (!formData.time) {
+      errors.time = "Please select a time";
+    }
 
-    const formValues = {
-      title: formData.title,
-      description: formData.description,
-      date: sessionDate,
-      time: formData.time,
-      prerequisites: formData.prerequisites,
-    };
+    // If we have any empty field errors, show them and stop
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
 
     try {
-      // Validate form data
-      sessionFormSchema.parse(formValues);
+      // Create a new date object from the form data
+      const [hours, minutes] = formData.time.split(":");
+      const sessionDate = new Date(formData.date);
+      sessionDate.setHours(parseInt(hours), parseInt(minutes));
+
+      // Basic validation for date
+      if (isNaN(sessionDate.getTime())) {
+        setFormErrors({ date: "Invalid date selected" });
+        return;
+      }
+
+      // Custom validation schema for edit
+      const validationSchema = z.object({
+        title: z.string().min(3, "Title must be at least 3 characters").max(50, "Title must be less than 50 characters"),
+        description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
+        time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Please select a valid time"),
+        prerequisites: z.string().optional(),
+      });
+
+      validationSchema.parse({
+        title: formData.title,
+        description: formData.description,
+        time: formData.time,
+        prerequisites: formData.prerequisites,
+      });
+
       setFormErrors({});
 
       await editSession(editingSession.id, {
-        name: formValues.title,
+        name: formData.title,
         time: sessionDate.toISOString(),
-        description: formValues.description,
-        prerequisites: formValues.prerequisites,
+        description: formData.description,
+        prerequisites: formData.prerequisites,
       });
 
       toast.success("Session edited successfully");
       setIsEditDialogOpen(false);
       setEditingSession(null);
+      setFormData({
+        title: "",
+        description: "",
+        date: new Date(),
+        time: format(new Date(), "HH:mm"),
+        prerequisites: "",
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {};
@@ -242,6 +300,12 @@ const Session = () => {
       toast.error("Please check the form for errors");
     }
   };
+
+  // Check if the user is the creator of the session
+  const isSessionCreator = (session: SessionType) => {
+    return user?.id === session.creatorID;
+  };
+
 
   return (
     <div className="relative pb-24">
@@ -289,25 +353,29 @@ const Session = () => {
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden">
           <ScrollArea className="h-[calc(100vh-20rem)] pr-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {upcomingSessions.length > 0 && (
-                <div className="col-span-1">
+                <div className="w-full">
                   <SessionList
                     title="Upcoming Sessions"
                     sessions={upcomingSessions}
                     onEdit={handleEdit}
                     onDelete={deleteSession}
+                    onEndSession={endSession}
+                    isSessionCreator={isSessionCreator}
                   />
                 </div>
               )}
 
               {pastSessions.length > 0 && (
-                <div className="col-span-1">
+                <div className="w-full">
                   <SessionList
                     title="Past Sessions"
                     sessions={pastSessions}
                     onEdit={handleEdit}
                     onDelete={deleteSession}
+                    onEndSession={endSession}
+                    isSessionCreator={isSessionCreator}
                   />
                 </div>
               )}
