@@ -6,18 +6,17 @@ import { AuthProvider } from "./components/providers/auth.tsx";
 import { ThemeProvider } from "./components/providers/theme-provider.tsx";
 import { SessionProvider } from "./contexts/SessionContext.tsx";
 import RegisterServiceWorker from "./components/RegisterServiceWorker.tsx";
-import "./index.css";
+import "./styles/style.css";
 import GroupsPage from "./pages/Group.tsx";
 import StudyGroupPage from "./pages/Group_page.tsx";
 import Home from "./pages/Home.tsx";
 import NotFoundPage from "./pages/Notfoundpage.tsx";
 import { Toaster } from "sonner";
-import CustomCursor from "./components/CustomCursor.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">\
-      {/* custom cursor */}
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      \{/* custom cursor */}
       {/* <CustomCursor /> */}
       <AuthProvider>
         <SessionProvider>
@@ -48,7 +47,13 @@ createRoot(document.getElementById("root")!).render(
           </BrowserRouter>
         </SessionProvider>
       </AuthProvider>
-      <Toaster closeButton richColors />
+      <Toaster
+        toastOptions={{
+          duration: 4000,
+          closeButton: true,
+        }}
+        richColors
+      />
     </ThemeProvider>
   </StrictMode>
 );

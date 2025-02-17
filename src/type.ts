@@ -5,7 +5,7 @@ export type Group = {
   subject: string;
   nextMeeting: string;
   code : string;
-  createdId: string;
+  creatorId: string;
 };
 
 export type JoinRequest = {
