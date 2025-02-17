@@ -14,6 +14,7 @@ import { UserGroupSection } from "@/components/group/Users-group-section";
 import { Card, CardContent } from "@/components/ui/card";
 import BeautifulIndianClock from "@/components/IndianClock";
 
+
 const MotionCard = motion(Card);
 
 export default function GroupsPage() {
@@ -52,12 +53,13 @@ export default function GroupsPage() {
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       group.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const filteredMemberGroups = memberGroups.filter(
     (group) =>
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.subject.toLowerCase().includes(searchTerm.toLowerCase())
+      (group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.subject.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      user?.id !== group.creatorId
   );
+  
 
   if (!user) {
     return (

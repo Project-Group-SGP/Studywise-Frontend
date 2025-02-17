@@ -1,37 +1,54 @@
-import React, { useState, useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
-import { useAuth } from "./providers/auth";
-import { getGroupMessages } from "@/lib/group-api";
-import {
-  Send,
-  Smile,
-  Book,
-  PhoneCall,
-  Video,
-  X,
-  Mic,
-  MicOff,
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { getGroupMessages } from "@/lib/group-api";
+import {
+  Book,
+  Mic,
+  MicOff,
+  PhoneCall,
+  Send,
+  Smile,
+  X
+} from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "../providers/auth";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format, isToday, isYesterday } from "date-fns";
 import type { Message } from "@/type";
+import { format, isToday, isYesterday } from "date-fns";
+import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
+import { MessageContent } from "./Message";
+import { toast } from "sonner";
+
 
 interface PeerConnection {
   userId: string;
+  userName: string;
   connection: RTCPeerConnection;
   stream?: MediaStream;
 }
-import { MessageContent } from "./Message";
+
+// Update the interface to match server data
+interface CallParticipantInfo {
+  socketId: string;
+  userId: string;
+  userName: string;
+}
+
+// Update state to include socketId
+interface CallParticipant {
+  id: string;
+  socketId: string;
+  name: string;
+}
+
 
 const ChatRoom = ({ groupId }: { groupId: string }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,9 +57,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [isInCall, setIsInCall] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [callParticipants, setCallParticipants] = useState<Set<string>>(
-    new Set()
-  );
+  const [callParticipants, setCallParticipants] = useState<CallParticipant[]>([]);
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const peerConnectionsRef = useRef<Map<string, PeerConnection>>(new Map());
@@ -84,7 +99,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       return null;
     }
   };
-  const createPeerConnection = (targetUserId: string): RTCPeerConnection => {
+  const createPeerConnection = (targetUserId: string, targetUserName: string): RTCPeerConnection => {
     const configuration = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -110,11 +125,16 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       const connection = peerConnectionsRef.current.get(targetUserId);
       if (connection) {
         connection.stream = event.streams[0];
-        // Missing: Actually playing the received audio stream
         const audioElement = new Audio();
         audioElement.srcObject = event.streams[0];
         audioElement.play();
-        setCallParticipants((prev) => new Set(prev.add(targetUserId)));
+        setCallParticipants((prev) => {
+          const exists = prev.some(p => p.id === targetUserId);
+          if (!exists) {
+            return [...prev, { id: targetUserId, socketId: targetUserId, name: connection.userName || 'Unknown User' }];
+          }
+          return prev;
+        });
       }
     };
 
@@ -126,12 +146,15 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           candidate: event.candidate,
           senderId: socket?.id,
           receiverId: targetUserId,
+          senderName: user?.name,
+          receiverName: targetUserName
         });
       }
     };
 
     peerConnectionsRef.current.set(targetUserId, {
       userId: targetUserId,
+      userName: targetUserName,
       connection: peerConnection,
     });
 
@@ -143,20 +166,38 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     if (!stream) return;
 
     setIsInCall(true);
-    socket?.emit("joinGroupCall", { groupId, userId });
+    socket?.emit("joinGroupCall", { 
+      groupId, 
+      userId,
+      userName: user?.name
+    });
   };
 
   const handleLeaveCall = () => {
+    // Stop local stream
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
 
+    // Clean up peer connections
     peerConnectionsRef.current.forEach((peer) => {
       peer.connection.close();
     });
     peerConnectionsRef.current.clear();
 
     setIsInCall(false);
-    setCallParticipants(new Set());
-    socket?.emit("leaveGroupCall", { groupId });
+    setCallParticipants([]);
+
+  
+
+    
+    // Send complete user info when leaving
+    if(socket)
+    socket?.emit("leaveGroupCall", { 
+      groupId,
+      userId,
+      userName: user?.name 
+    });
+
+
   };
 
   const toggleMute = () => {
@@ -192,38 +233,46 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     });
 
     // Audio call related events
-    newSocket.on("userJoinedCall", async ({ userId, socketId }) => {
-      setCallParticipants((prev) => new Set(prev.add(userId)));
+    newSocket.on("userJoinedCall", async ({ socketId, userId, userName }) => {
+      setCallParticipants((prev) => {
+        const exists = prev.some(p => p.id === userId);
+        if (!exists) {
+          return [...prev, { 
+            id: userId, 
+            socketId: socketId,
+            name: userName || 'Unknown User' 
+          }];
+        }
+        return prev;
+      });
 
       if (isInCall) {
-        const peerConnection = createPeerConnection(socketId);
+        const peerConnection = createPeerConnection(socketId, userName);
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
 
         socket?.emit("offer", {
           groupId,
           offer,
-          senderId: socket.id,
           receiverId: socketId,
+          senderName: user?.name,
+          receiverName: userName
         });
       }
     });
 
-    newSocket.on("userLeftCall", ({ socketId }) => {
+    newSocket.on("userLeftCall", ({ socketId, userId, userName }) => {
       const peer = peerConnectionsRef.current.get(socketId);
       if (peer) {
         peer.connection.close();
         peerConnectionsRef.current.delete(socketId);
-        setCallParticipants((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(peer.userId);
-          return newSet;
-        });
+        setCallParticipants((prev) => prev.filter(p => p.socketId !== socketId));
+        toast.info(`${userName || 'Someone'} left the call`);
       }
     });
 
-    newSocket.on("offer", async ({ offer, senderId }) => {
-      const peerConnection = createPeerConnection(senderId);
+    newSocket.on("offer", async ({ offer, senderId, senderName }) => {
+      const peerConnection = createPeerConnection(senderId, senderName);
       await peerConnection.setRemoteDescription(
         new RTCSessionDescription(offer)
       );
@@ -236,6 +285,8 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
         answer,
         senderId: socket.id,
         receiverId: senderId,
+        senderName: user?.name,
+        receiverName: senderName
       });
     });
 
@@ -257,8 +308,53 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       }
     });
 
+    newSocket.on("existingParticipants", (participants: CallParticipantInfo[]) => {
+      setCallParticipants(
+        participants.map((p) => ({ 
+          id: p.userId,
+          socketId: p.socketId, 
+          name: p.userName 
+        }))
+      );
+    });
+
+    newSocket.on("userLeftCall", ({ socketId, userId, userName }) => {
+      // Try to find and close the peer connection using socketId
+      const peer = peerConnectionsRef.current.get(socketId);
+      if (peer) {
+        peer.connection.close();
+        peerConnectionsRef.current.delete(socketId);
+      }
+      
+      // Update participants using BOTH socketId and userId to ensure removal
+      setCallParticipants((prev) => prev.filter(p => 
+        p.socketId !== socketId && p.id !== userId
+      ));
+      
+      toast.info(`${userName || 'Someone'} left the call`);
+    });
+
+    // Add error handler
+    newSocket.on("error", (message: string) => {
+      toast.error(message);
+    });
+
+    // Add connection state change logging
+    newSocket.on("connect", () => {
+      console.log("Connected to server");
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from server");
+      setCallParticipants([]);
+      setIsInCall(false);
+    });
+
     return () => {
       handleLeaveCall();
+      newSocket.off("error");
+      newSocket.off("connect");
+      newSocket.off("disconnect");
       newSocket.disconnect();
     };
   }, [groupId]);
@@ -335,15 +431,19 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   const renderCallParticipants = () => {
     return (
       <div className="flex flex-wrap gap-2">
-        {Array.from(callParticipants).map((participantId) => (
+        {callParticipants?.map((participant) => (
           <div
-            key={participantId}
+            key={participant.id}
             className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1"
           >
             <Avatar className="w-6 h-6">
-              <AvatarFallback>{participantId[0]}</AvatarFallback>
+              <AvatarFallback>
+                {participant.id === userId ? 'Y' : (participant?.name?.charAt(0) || '?')}
+              </AvatarFallback>
             </Avatar>
-            <span className="text-sm">{participantId}</span>
+            <span className="text-sm">
+              {participant.id === userId ? 'You' : (participant?.name || 'Unknown')}
+            </span>
           </div>
         ))}
       </div>
@@ -367,7 +467,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Active Members: {typingUsers.size} | In Call:{" "}
-              {callParticipants.size}
+              {callParticipants.length}
             </p>
           </div>
         </div>

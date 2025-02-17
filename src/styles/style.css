@@ -131,7 +131,7 @@ body {
 
 /* Remove custom cursor styles */
 * {
-  cursor: none !important;
+  /* cursor: none !important; */
 }
 @keyframes slide-up {
   from {

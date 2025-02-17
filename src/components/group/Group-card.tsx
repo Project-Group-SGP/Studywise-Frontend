@@ -182,13 +182,45 @@ export function GroupCard({ group, isOwner, isRequest = 0, requests = [], setReq
                 {isRequest} Request{isRequest > 1 ? 's' : ''}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Pending Join Requests</DialogTitle>
+            <DialogContent className="max-w-[95vw] sm:max-w-md mx-auto h-[80vh] sm:h-auto overflow-y-auto">
+              <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
+                <DialogTitle className="text-xl">Pending Join Requests</DialogTitle>
               </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto space-y-2 p-2">
+              <div className="overflow-y-auto max-h-[60vh] space-y-3 -mx-6 px-6">
                 {requests.map((request) => (
-                  <RequestItem key={request.id} request={request} />
+                  <div 
+                    key={request.id} 
+                    className="flex flex-col sm:flex-row items-center justify-between py-4 hover:bg-muted/50 rounded-lg px-3 transition-colors duration-200 gap-4"
+                  >
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                      <Avatar className="h-12 w-12 sm:h-10 sm:w-10 border-2 border-primary/20">
+                        <AvatarImage src={request.avatar} alt={request.name} />
+                        <AvatarFallback className="bg-primary/10">{request.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="text-center sm:text-left">
+                        <p className="text-sm font-medium">{request.name}</p>
+                        <p className="text-xs text-muted-foreground">{request.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1 sm:flex-none hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/20"
+                        onClick={() => handleAcceptRequest(request.id)}
+                      >
+                        <Check className="w-4 h-4 mr-1" /> Accept
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1 sm:flex-none hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20"
+                        onClick={() => handleRejectRequest(request.id)}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </DialogContent>
