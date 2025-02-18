@@ -70,6 +70,8 @@ export default function StudyGroupPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(true);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+
 
   const { groupId } = useParams();
   const { user } = useAuth();

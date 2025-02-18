@@ -2,19 +2,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getGroupMessages } from "@/lib/group-api";
-import {
-  Book,
-  Mic,
-  MicOff,
-  PhoneCall,
-  Send,
-  Smile,
-  X
-} from "lucide-react";
+import { getGroupItems } from "@/lib/group-api";
+import { Book, Mic, MicOff, PhoneCall, Send, Smile, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "../providers/auth";
+import { Upload as UploadFile } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 
 import {
   Popover,
@@ -26,7 +28,7 @@ import { format, isToday, isYesterday } from "date-fns";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { MessageContent } from "./Message";
 import { toast } from "sonner";
-
+import FileMessage from "./FIleMessage";
 
 interface PeerConnection {
   userId: string;
@@ -49,7 +51,6 @@ interface CallParticipant {
   name: string;
 }
 
-
 const ChatRoom = ({ groupId }: { groupId: string }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -57,13 +58,20 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [isInCall, setIsInCall] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [callParticipants, setCallParticipants] = useState<CallParticipant[]>([]);
+  const [callParticipants, setCallParticipants] = useState<CallParticipant[]>(
+    []
+  );
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const peerConnectionsRef = useRef<Map<string, PeerConnection>>(new Map());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [fileDialogOpen, setFileDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -99,7 +107,10 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       return null;
     }
   };
-  const createPeerConnection = (targetUserId: string, targetUserName: string): RTCPeerConnection => {
+  const createPeerConnection = (
+    targetUserId: string,
+    targetUserName: string
+  ): RTCPeerConnection => {
     const configuration = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -124,9 +135,16 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
         audioElement.srcObject = event.streams[0];
         audioElement.play();
         setCallParticipants((prev) => {
-          const exists = prev.some(p => p.id === targetUserId);
+          const exists = prev.some((p) => p.id === targetUserId);
           if (!exists) {
-            return [...prev, { id: targetUserId, socketId: targetUserId, name: connection.userName || 'Unknown User' }];
+            return [
+              ...prev,
+              {
+                id: targetUserId,
+                socketId: targetUserId,
+                name: connection.userName || "Unknown User",
+              },
+            ];
           }
           return prev;
         });
@@ -142,7 +160,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           senderId: socket?.id,
           receiverId: targetUserId,
           senderName: user?.name,
-          receiverName: targetUserName
+          receiverName: targetUserName,
         });
       }
     };
@@ -161,10 +179,10 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     if (!stream) return;
 
     setIsInCall(true);
-    socket?.emit("joinGroupCall", { 
-      groupId, 
+    socket?.emit("joinGroupCall", {
+      groupId,
       userId,
-      userName: user?.name
+      userName: user?.name,
     });
   };
 
@@ -180,16 +198,14 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
     setIsInCall(false);
     setCallParticipants([]);
-    
+
     // Send complete user info when leaving
-    if(socket)
-    socket?.emit("leaveGroupCall", { 
-      groupId,
-      userId,
-      userName: user?.name 
-    });
-
-
+    if (socket)
+      socket?.emit("leaveGroupCall", {
+        groupId,
+        userId,
+        userName: user?.name,
+      });
   };
 
   const toggleMute = () => {
@@ -227,13 +243,16 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     // Audio call related events
     newSocket.on("userJoinedCall", async ({ socketId, userId, userName }) => {
       setCallParticipants((prev) => {
-        const exists = prev.some(p => p.id === userId);
+        const exists = prev.some((p) => p.id === userId);
         if (!exists) {
-          return [...prev, { 
-            id: userId, 
-            socketId: socketId,
-            name: userName || 'Unknown User' 
-          }];
+          return [
+            ...prev,
+            {
+              id: userId,
+              socketId: socketId,
+              name: userName || "Unknown User",
+            },
+          ];
         }
         return prev;
       });
@@ -248,7 +267,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           offer,
           receiverId: socketId,
           senderName: user?.name,
-          receiverName: userName
+          receiverName: userName,
         });
       }
     });
@@ -258,8 +277,10 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       if (peer) {
         peer.connection.close();
         peerConnectionsRef.current.delete(socketId);
-        setCallParticipants((prev) => prev.filter(p => p.socketId !== socketId));
-        toast.info(`${userName || 'Someone'} left the call`);
+        setCallParticipants((prev) =>
+          prev.filter((p) => p.socketId !== socketId)
+        );
+        toast.info(`${userName || "Someone"} left the call`);
       }
     });
 
@@ -278,7 +299,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
         senderId: socket.id,
         receiverId: senderId,
         senderName: user?.name,
-        receiverName: senderName
+        receiverName: senderName,
       });
     });
 
@@ -300,15 +321,18 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       }
     });
 
-    newSocket.on("existingParticipants", (participants: CallParticipantInfo[]) => {
-      setCallParticipants(
-        participants.map((p) => ({ 
-          id: p.userId,
-          socketId: p.socketId, 
-          name: p.userName 
-        }))
-      );
-    });
+    newSocket.on(
+      "existingParticipants",
+      (participants: CallParticipantInfo[]) => {
+        setCallParticipants(
+          participants.map((p) => ({
+            id: p.userId,
+            socketId: p.socketId,
+            name: p.userName,
+          }))
+        );
+      }
+    );
 
     newSocket.on("userLeftCall", ({ socketId, userId, userName }) => {
       // Try to find and close the peer connection using socketId
@@ -317,18 +341,30 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
         peer.connection.close();
         peerConnectionsRef.current.delete(socketId);
       }
-      
+
       // Update participants using BOTH socketId and userId to ensure removal
-      setCallParticipants((prev) => prev.filter(p => 
-        p.socketId !== socketId && p.id !== userId
-      ));
-      
-      toast.info(`${userName || 'Someone'} left the call`);
+      setCallParticipants((prev) =>
+        prev.filter((p) => p.socketId !== socketId && p.id !== userId)
+      );
+
+      toast.info(`${userName || "Someone"} left the call`);
     });
 
     // Add error handler
     newSocket.on("error", (message: string) => {
       toast.error(message);
+    });
+
+    // Add this within your existing useEffect after other socket event listeners
+    newSocket.on("fileUploaded", (data) => {
+      // Handle file upload completion
+      setMessages((prev) => [...prev, data.file]);
+      setTimeout(scrollToBottom, 0);
+    });
+
+    newSocket.on("fileDeleted", ({ fileId }) => {
+      // Remove deleted files from messages
+      setMessages((prev) => prev.filter((message) => message.id !== fileId));
     });
 
     // Add connection state change logging
@@ -357,7 +393,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
   const fetchMessages = async () => {
     try {
-      const response = await getGroupMessages(groupId);
+      const response = await getGroupItems(groupId);
       setMessages(response);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -420,6 +456,65 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     }, 1000);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+      setFileDialogOpen(true);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Convert file to buffer for socket.io
+    const arrayBuffer = await selectedFile.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
+
+    socket?.emit("uploadFile", {
+      file: buffer,
+      userId,
+      groupId,
+      fileType: selectedFile.type,
+      fileName: selectedFile.name,
+      caption: "", // Optional caption can be added
+    });
+
+    // Listen for upload progress
+    socket?.on("uploadProgress", ({ progress }) => {
+      setUploadProgress(progress);
+    });
+
+    // Listen for upload completion
+    socket?.on("uploadComplete", () => {
+      setIsUploading(false);
+      setFileDialogOpen(false);
+      setSelectedFile(null);
+      // Clean up event listeners
+      socket?.off("uploadProgress");
+      socket?.off("uploadComplete");
+      socket?.off("uploadError");
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    });
+
+    // Listen for upload errors
+    socket?.on("uploadError", ({ message }) => {
+      toast.error(message);
+      setIsUploading(false);
+      socket?.off("uploadProgress");
+      socket?.off("uploadComplete");
+      socket?.off("uploadError");
+    });
+  };
+
+  const cancelFileUpload = () => {
+    setFileDialogOpen(false);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const renderCallParticipants = () => {
     return (
       <div className="flex flex-wrap gap-2">
@@ -430,11 +525,15 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           >
             <Avatar className="w-6 h-6">
               <AvatarFallback>
-                {participant.id === userId ? 'Y' : (participant?.name?.charAt(0) || '?')}
+                {participant.id === userId
+                  ? "Y"
+                  : participant?.name?.charAt(0) || "?"}
               </AvatarFallback>
             </Avatar>
             <span className="text-sm">
-              {participant.id === userId ? 'You' : (participant?.name || 'Unknown')}
+              {participant.id === userId
+                ? "You"
+                : participant?.name || "Unknown"}
             </span>
           </div>
         ))}
@@ -443,6 +542,117 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   };
 
   const groupedMessages = groupMessagesByDate(messages);
+
+  const FileUploadDialog = () => {
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        setSelectedFile(files[0]);
+      }
+    };
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        setSelectedFile(e.target.files[0]);
+      }
+    };
+
+    return (
+      <Dialog open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload File</DialogTitle>
+            <DialogDescription>
+              Drag and drop a file or click to select
+            </DialogDescription>
+          </DialogHeader>
+
+          {!selectedFile && !isUploading ? (
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadFile className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-400 justify-center">
+                <label className="relative cursor-pointer rounded-md bg-white dark:bg-gray-800 font-semibold text-primary hover:text-primary/80">
+                  <span>Click to upload</span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="sr-only"
+                    onChange={handleFileInputChange}
+                  />
+                </label>
+                <p className="pl-1">or drag and drop</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {selectedFile && (
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <UploadFile className="h-6 w-6 text-gray-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  {!isUploading && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedFile(null)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+              {isUploading && (
+                <div className="space-y-2">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <p className="text-sm text-center text-muted-foreground">
+                    Uploading: {uploadProgress}%
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={cancelFileUpload}
+              disabled={isUploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleFileUpload}
+              disabled={!selectedFile || isUploading}
+            >
+              {isUploading ? "Uploading..." : "Upload"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -551,15 +761,20 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                           {formatMessageTime(message.updatedAt)}
                         </span>
                       </div>
-                      <div
-                        className={`mt-1 rounded-2xl px-4 py-2 text-sm max-w-md ${
-                          message.userId === userId
-                            ? "bg-primary text-primary-foreground rounded-br-none"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-none"
-                        }`}
-                      >
-                        <MessageContent content={message.content} />
-                      </div>
+                      {message.type === "message" ? (
+                        <div
+                          className={`mt-1 rounded-2xl px-4 py-2 text-sm max-w-md ${
+                            message.userId === userId
+                              ? "bg-primary text-primary-foreground rounded-br-none"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-none"
+                          }`}
+                        >
+                          <MessageContent content={message.content!} />
+                        </div>
+                      ) : (
+                        //@ts-ignore
+                        <FileMessage file={message} />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -600,6 +815,17 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                 <Smile className="w-5 h-5 text-gray-500" />
               </Button>
             </PopoverTrigger>
+            {/* Add this inside the form before the emoji picker */}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => setFileDialogOpen(true)}
+              className="bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
+              <UploadFile className="w-5 h-5 text-gray-500" />
+            </Button>
             <PopoverContent align="end" className="p-0">
               <EmojiPicker
                 onEmojiClick={(emoji) =>
@@ -617,6 +843,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           </Button>
         </form>
       </div>
+      <FileUploadDialog />
     </div>
   );
 };

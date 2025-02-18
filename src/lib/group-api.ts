@@ -98,12 +98,11 @@ export async function rejectRequest(requestId: string): Promise<Boolean> {
 }
 
 export async function getGroupdetails(groupId: string): Promise<GroupData> {
- try{
-
-   const response = await axios.post(
-     `${API_URL}/api/groups/group-details`,
-     { groupId },
-     { withCredentials: true }
+  try {
+    const response = await axios.post(
+      `${API_URL}/api/groups/group-details`,
+      { groupId },
+      { withCredentials: true }
     );
     return response.data.group;
   } catch (error) {
@@ -144,16 +143,30 @@ export async function deleteGroup(groupId: string): Promise<Boolean> {
   }
 }
 
-// get group message
-export async function getGroupMessages(groupId: string): Promise<any> {
+// get group message and Files
+export async function getGroupItems(groupId: string): Promise<any> {
   try {
-    const response = await axios.get(
-      `${API_URL}/api/groups/${groupId}/messages`,
-      { withCredentials: true }
+    const [messagesResponse, filesResponse] = await Promise.all([
+      axios.get(`${API_URL}/api/groups/${groupId}/messages`, {
+        withCredentials: true,
+      }),
+      axios.get(`${API_URL}/api/groups/${groupId}/files`, {
+        withCredentials: true,
+      }),
+    ]);
+
+    const messages = messagesResponse.data.messages;
+    const files = filesResponse.data.files;
+
+    // Merge and sort by createdAt
+    const allItems = [...messages, ...files].sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
-    return response.data.messages;
+
+    return allItems;
   } catch (error) {
-    console.error("Error getting group messages:", error);
+    console.error("Error getting group messages and files:", error);
     throw error;
   }
 }

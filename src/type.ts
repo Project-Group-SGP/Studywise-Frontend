@@ -4,7 +4,7 @@ export type Group = {
   memberIds: string[];
   subject: string;
   sessions: Session[];
-  code : string;
+  code: string;
   creatorId: string;
 };
 
@@ -14,7 +14,7 @@ export type JoinRequest = {
   avatar: string;
   email: string;
   groupId: string;
-}
+};
 export type GroupData = {
   id: string;
   name: string;
@@ -39,15 +39,24 @@ export type User = {
 
 export type Message = {
   id: string;
-  content: string;
+  type: "message" | "file";
+  content?: string; // For messages
+  name?: string; // For files
+  url?: string; // For files
+  fileType?: string; // For files
+  size?: number; // For files
+  caption?: string; // For files
+  previewUrl?: string;
+  thumbnailUrl?: string;
+  metadata?: Record<string, any>;
   userId: string;
   groupId: string;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
   user: {
-    name: string
-    avatar?: string
-  }
+    name: string;
+    avatar?: string;
+  };
 };
 
 export interface Session {
@@ -57,7 +66,7 @@ export interface Session {
   description: string;
   isActive?: boolean;
   startedAt?: string;
-  time: string; 
+  time: string;
   prerequisites?: string;
   createdBy: {
     id: string;
