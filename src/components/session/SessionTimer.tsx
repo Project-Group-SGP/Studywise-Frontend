@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
-import { Card } from "../ui/card";
-import {  GripHorizontal, Minimize2, Maximize2, StopCircle, CheckCircle, Zap } from "lucide-react";
-import { Button } from "../ui/button";
-import { motion } from "framer-motion";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Badge } from "../ui/badge";
+import { motion } from "framer-motion";
+import { GripHorizontal, Maximize2, Minimize2, StopCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface SessionTimerProps {
   session: {

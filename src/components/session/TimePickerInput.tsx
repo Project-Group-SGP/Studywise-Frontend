@@ -19,7 +19,7 @@ export function TimePickerInput({ date, setDate }: TimePickerProps) {
   const minuteRef = React.useRef<HTMLDivElement>(null);
   const hourRef = React.useRef<HTMLDivElement>(null);
   const [hour, setHour] = React.useState(date.getHours());
-  const [minute, setMinute] = React.useState(date.getMinutes());
+  const [, setMinute] = React.useState(date.getMinutes());
   const [isPM, setIsPM] = React.useState(hour >= 12);
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 1);
