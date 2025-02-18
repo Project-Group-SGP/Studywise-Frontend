@@ -104,13 +104,8 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
-        // Add TURN servers for better connectivity
-        {
-          urls: "turn:your-turn-server.com",
-          username: "username",
-          credential: "credential",
-        },
       ],
+      iceCandidatePoolSize: 10,
     };
 
     const peerConnection = new RTCPeerConnection(configuration);
@@ -185,9 +180,6 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
     setIsInCall(false);
     setCallParticipants([]);
-
-  
-
     
     // Send complete user info when leaving
     if(socket)

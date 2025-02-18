@@ -3,7 +3,7 @@ export type Group = {
   name: string;
   memberIds: string[];
   subject: string;
-  nextMeeting: string;
+  sessions: Session[];
   code : string;
   creatorId: string;
 };
@@ -57,9 +57,8 @@ export interface Session {
   description: string;
   isActive?: boolean;
   startedAt?: string;
-  maxParticipants?: number;
+  time: string; 
   prerequisites?: string;
-  meetingLink?: string;
   createdBy: {
     id: string;
     name: string;

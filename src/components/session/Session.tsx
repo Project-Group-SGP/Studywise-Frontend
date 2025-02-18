@@ -65,7 +65,6 @@ const Session = () => {
   console.log(sessions);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const date  =  new Date();
 
   const [formData, setFormData] = useState<SessionFormData>({
     title: "",
@@ -218,19 +217,19 @@ const Session = () => {
 
     // Check for empty required fields first
     const errors: Record<string, string> = {};
-    
+
     if (!formData.title.trim()) {
       errors.title = "Title is required";
     }
-    
+
     if (!formData.description.trim()) {
       errors.description = "Description is required";
     }
-    
+
     if (!formData.date) {
       errors.date = "Please select a date";
     }
-    
+
     if (!formData.time) {
       errors.time = "Please select a time";
     }
@@ -261,9 +260,20 @@ const Session = () => {
 
       // Custom validation schema for edit
       const validationSchema = z.object({
-        title: z.string().min(3, "Title must be at least 3 characters").max(50, "Title must be less than 50 characters"),
-        description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
-        time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Please select a valid time"),
+        title: z
+          .string()
+          .min(3, "Title must be at least 3 characters")
+          .max(50, "Title must be less than 50 characters"),
+        description: z
+          .string()
+          .min(10, "Description must be at least 10 characters")
+          .max(500, "Description must be less than 500 characters"),
+        time: z
+          .string()
+          .regex(
+            /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+            "Please select a valid time"
+          ),
         prerequisites: z.string().optional(),
       });
 
@@ -311,7 +321,6 @@ const Session = () => {
   const isSessionCreator = (session: SessionType) => {
     return user?.id === session.creatorID;
   };
-
 
   return (
     <div className="relative pb-24">

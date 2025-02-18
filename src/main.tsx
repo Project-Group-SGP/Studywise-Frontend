@@ -6,12 +6,12 @@ import { AuthProvider } from "./components/providers/auth.tsx";
 import { ThemeProvider } from "./components/providers/theme-provider.tsx";
 import { SessionProvider } from "./contexts/SessionContext.tsx";
 import RegisterServiceWorker from "./components/RegisterServiceWorker.tsx";
-import "./styles/style.css";
 import GroupsPage from "./pages/Group.tsx";
 import StudyGroupPage from "./pages/Group_page.tsx";
 import Home from "./pages/Home.tsx";
 import NotFoundPage from "./pages/Notfoundpage.tsx";
 import { Toaster } from "sonner";
+import "./style.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
