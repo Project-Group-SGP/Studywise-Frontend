@@ -49,8 +49,15 @@ const FileMessage = ({ file }: { file: FileMessageProps }) => {
           />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <Button variant="ghost" className="text-white">
-              <Download className="w-4 h-4 mr-2" />
-              Download
+              <a
+                href={file.url}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </a>
             </Button>
           </div>
         </div>
