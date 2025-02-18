@@ -33,43 +33,38 @@ export function JoinRequestCard({ id, name, avatar, email }: JoinRequestCardProp
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardContent className="pt-6">
-        <div className="flex items-center space-x-4">
-            {/* //TODO: Add the avatar image */}
-          {/* <img
-            src={avatar}
-            alt={`${name}'s avatar`}
-            width={48}
-            height={48}
-            className="rounded-full"
-          /> */}
+    <Card className="w-full max-w-sm transition-all duration-300 hover:shadow-lg">
+      <CardContent className="pt-6 px-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <UserAvatar
             user={{
               name: name || "User",
               avatar: avatar || undefined,
-              userId:  email || "default",
-
+              userId: email || "default",
             }}
-            size={36}
+            size={48}
+            className="shrink-0"
           />
-          <div>
+          <div className="text-center sm:text-left">
             <h3 className="text-lg font-semibold">{name}</h3>
-            <p className="text-sm text-muted-foreground">Wants to join your group</p>
+            <p className="text-sm text-muted-foreground">{email}</p>
+            <p className="text-xs text-muted-foreground mt-1">Wants to join your group</p>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex flex-col sm:flex-row gap-2 justify-end px-4 sm:px-6 pb-6">
         <Button 
           variant="outline" 
           onClick={() => handleAction('reject')} 
           disabled={isLoading}
+          className="w-full sm:w-auto"
         >
           Reject
         </Button>
         <Button 
           onClick={() => handleAction('accept')} 
           disabled={isLoading}
+          className="w-full sm:w-auto"
         >
           Accept
         </Button>

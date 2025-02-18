@@ -84,7 +84,7 @@ const Navbar = () => {
   }
 
   return (
-<nav className="dark:bg-dark-background/70 dark:border-dark-border fixed start-0 top-0 z-[9999] w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
+<nav className="dark:bg-dark-background/70 dark:border-dark-border fixed start-0 top-0 z-[100] w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
 
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
         <div className="flex items-center gap-2">

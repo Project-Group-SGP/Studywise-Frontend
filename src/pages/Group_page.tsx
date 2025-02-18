@@ -1,27 +1,10 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate, useParams } from "react-router";
-import { getGroupdetails, leaveGroup, deleteGroup } from "@/lib/group-api";
-import { cn } from "@/lib/utils";
-import {
-  Users,
-  MessageSquare,
-  PenTool,
-  Calendar,
-  Zap,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import Chat from "@/components/chat/Chat";
+import { Dock, DockIcon } from "@/components/magicui/dock";
+import Member from "@/components/member";
+import Navbar from "@/components/Nav_bar";
 import { useAuth } from "@/components/providers/auth";
+import Session from "@/components/session/Session";
+import { SessionTimer } from "@/components/session/SessionTimer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,15 +15,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import Member from "@/components/member";
-import Chat from "@/components/Chat";
-import Session from "@/components/Session";
-import Navbar from "@/components/Nav_bar";
-import { motion, AnimatePresence } from "framer-motion";
-import { GroupData } from "@/type";
-import { SessionTimer } from "@/components/SessionTimer";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/contexts/SessionContext";
+import { deleteGroup, getGroupdetails, leaveGroup } from "@/lib/group-api";
+import { cn } from "@/lib/utils";
+import { GroupData } from "@/type";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  PenTool,
+  Users,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 const navItems = [
   { id: "members", icon: Users, label: "Study Buddies" },
@@ -76,7 +76,7 @@ export default function StudyGroupPage() {
   const id = user?.id;
   const navigate = useNavigate();
   const isOwner = groupData.creatorId === id;
-  const { activeSessions, endSession } = useSession();
+  const { activeSessions, endSession, leaveSession } = useSession();
 
   useEffect(() => {
     async function fetchGroupData() {
@@ -103,18 +103,27 @@ export default function StudyGroupPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    console.log("Active Sessions:", activeSessions);
+  }, [activeSessions]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br relative from-background to-secondary/20">
       <Navbar />
       
       {/* Add Session Timers here - they'll be draggable anywhere */}
-      {activeSessions.length > 0 && activeSessions.map((session) => (
-        <SessionTimer
-          key={session.id}
-          session={session}
-          onClose={() => endSession(session.id)}
-        />
-      ))}
+      {activeSessions.length > 0 && activeSessions.map((session) => {
+        console.log("Session being rendered:", session);
+        return (
+          <SessionTimer
+            key={session.id}
+            session={session}
+            onClose={() => endSession(session.id)}
+            onLeave={() => leaveSession(session.id)}
+            currentUserId={user?.id || ''}
+          />
+        );
+      })}
 
       <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between p-2">
         <main className="container mx-auto px-4 pt-20 pb-20">
@@ -254,76 +263,44 @@ export default function StudyGroupPage() {
           </div>
 
           {/* Navigation */}
-          <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4">
-            <div className="bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-lg px-2 py-1 flex items-center space-x-2">
+          <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4">
+            <Dock 
+              className="bg-background/95 backdrop-blur-md border border-border/50 h-16"
+              iconSize={55}
+              iconMagnification={65}
+            >
               {navItems.map((item) => (
-                <NavItem
+                <DockIcon
                   key={item.id}
-                  item={item}
-                  isActive={activeTab === item.id}
                   onClick={() => setActiveTab(item.id)}
-                />
+                  className={cn(
+                    "group relative p-2",
+                    activeTab === item.id
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-primary/5 text-muted-foreground"
+                  )}
+                >
+                  <div
+                    className="absolute top-[-40px] bg-background text-foreground text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    role="tooltip"
+                  >
+                    {item.label}
+                  </div>
+                  <item.icon className="h-5 w-5" />
+                  {activeTab === item.id && (
+                    <motion.div
+                      layoutId="nav-active-dot"
+                      className="absolute bottom-1 h-1 w-1 bg-primary rounded-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    />
+                  )}
+                </DockIcon>
               ))}
-            </div>
-          </nav>
+            </Dock>
+          </div>
         </main>
       </div>
     </div>
   );
 }
-
-interface NavItemProps {
-  item: {
-    id: string;
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-  };
-  isActive: boolean;
-  onClick: () => void;
-}
-
-const NavItem = ({ item, isActive, onClick }: NavItemProps) => {
-  return (
-    <button
-      aria-selected={isActive}
-      onClick={onClick}
-      className={cn(
-        "group relative flex flex-col items-center justify-center",
-        "w-16 p-2 rounded-lg transition-all duration-300",
-        isActive
-          ? "bg-primary/10 text-primary"
-          : "hover:bg-primary/5 text-muted-foreground"
-      )}
-    >
-      <div
-        className="absolute top-[-40px] bg-background text-foreground text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        role="tooltip"
-      >
-        {item.label}
-      </div>
-
-      <div
-        className={cn(
-          "p-2 rounded-full transition-all",
-          isActive ? "bg-primary/20 scale-110" : "group-hover:bg-primary/10"
-        )}
-      >
-        <item.icon
-          className={cn(
-            "h-5 w-5",
-            isActive ? "text-primary" : "text-muted-foreground"
-          )}
-        />
-      </div>
-
-      {isActive && (
-        <motion.div
-          layoutId="nav-active-dot"
-          className="h-1 w-1 bg-primary rounded-full mt-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        />
-      )}
-    </button>
-  );
-};
