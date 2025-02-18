@@ -241,6 +241,12 @@ const Session = () => {
       return;
     }
 
+    //if time is less than current time
+    if (new Date(formData.date) < new Date()) {
+      setFormErrors({ date: "Date cannot be in the past" });
+      return;
+    }
+
     try {
       // Create a new date object from the form data
       const [hours, minutes] = formData.time.split(":");
