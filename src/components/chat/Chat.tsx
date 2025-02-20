@@ -224,7 +224,11 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     fetchMessages();
 
     newSocket.on("message", (message) => {
-      setMessages((prev) => [...prev, message]);
+      if (message.file) {
+        setMessages((prev) => [...prev, message.file]);
+      } else {
+        setMessages((prev) => [...prev, message]);
+      }
       setTimeout(scrollToBottom, 0);
     });
 
@@ -356,11 +360,11 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     });
 
     // Add this within your existing useEffect after other socket event listeners
-    newSocket.on("fileUploaded", (data) => {
-      // Handle file upload completion
-      setMessages((prev) => [...prev, data.file]);
-      setTimeout(scrollToBottom, 0);
-    });
+    // newSocket.on("fileUploaded", (data) => {
+    //   // Handle file upload completion
+    //   setMessages((prev) => [...prev, data.file]);
+    //   setTimeout(scrollToBottom, 0);
+    // });
 
     newSocket.on("fileDeleted", ({ fileId }) => {
       // Remove deleted files from messages
@@ -415,7 +419,10 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   const groupMessagesByDate = (messages: Message[]) => {
     const grouped: { [date: string]: Message[] } = {};
     messages.forEach((message) => {
-      const date = formatDateHeader(message.updatedAt);
+      console.log(message);
+      const date = message.updatedAt
+        ? formatDateHeader(message.updatedAt)
+        : formatDateHeader(message.createdAt);
       if (!grouped[date]) grouped[date] = [];
       grouped[date].push(message);
     });
@@ -758,7 +765,11 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                           {message.user.name}
                         </span>
                         <span className="text-xs text-gray-400">
-                          {formatMessageTime(message.updatedAt)}
+                          {formatMessageTime(
+                            message.updatedAt
+                              ? message.updatedAt
+                              : message.createdAt
+                          )}
                         </span>
                       </div>
                       {message.type === "message" ? (
