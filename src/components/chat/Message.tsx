@@ -139,14 +139,14 @@ const LinkPreview: React.FC<{
 }> = ({ url, ogData, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="animate-pulse rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:bg-accent/50 transition-colors duration-200 ease-in-out">
-        <div className="flex gap-3 p-3">
-          <div className="w-[100px] h-[100px] bg-muted rounded"></div>
-          <div className="flex-1 space-y-2 py-1">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
+      <div className="animate-pulse rounded-lg border bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm overflow-hidden hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out p-3">
+        <div className="flex gap-3">
+          <div className="w-[100px] h-[100px] bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
             <div className="space-y-1">
-              <div className="h-3 bg-muted rounded"></div>
-              <div className="h-3 bg-muted rounded w-5/6"></div>
+              <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded"></div>
+              <div className="h-3 bg-gray-300 dark:bg-gray-700 rounded w-5/6"></div>
             </div>
           </div>
         </div>
@@ -164,27 +164,27 @@ const LinkPreview: React.FC<{
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:bg-accent/50 transition-colors duration-200 ease-in-out"
+        className="block rounded-lg border bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 shadow-md overflow-hidden hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 ease-in-out p-3"
       >
-        <div className="flex flex-col sm:flex-row gap-3 p-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           {ogData.image && (
-            <div className="relative w-full sm:w-[100px] h-[140px] sm:h-[100px] flex-shrink-0 overflow-hidden rounded-md">
+            <div className="relative w-full sm:w-[120px] h-[140px] sm:h-[100px] flex-shrink-0 overflow-hidden rounded-md">
               <img
                 src={ogData.image || "/placeholder.svg"}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover rounded-md"
               />
             </div>
           )}
-          <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
-            <div className="text-xs text-muted-foreground font-medium">
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="text-xs font-medium text-blue-500 dark:text-blue-400">
               {domain}
             </div>
-            <h3 className="font-semibold text-sm leading-tight truncate text-primary">
+            <h3 className="font-semibold text-sm leading-tight truncate text-gray-900 dark:text-gray-100">
               {ogData.title || "Visit Link"}
             </h3>
             {ogData.description && (
-              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
                 {ogData.description}
               </p>
             )}
@@ -199,11 +199,13 @@ const LinkPreview: React.FC<{
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block rounded-lg border bg-card text-card-foreground shadow-sm p-3 hover:bg-accent/50 transition-colors duration-200 ease-in-out"
+        className="block rounded-lg border bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 shadow-md p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 ease-in-out"
       >
         <div className="flex items-center space-x-2">
-          <ExternalLink className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium truncate">{url}</span>
+          <ExternalLink className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          <span className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
+            {url}
+          </span>
         </div>
       </a>
     );
