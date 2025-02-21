@@ -41,6 +41,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { AIChatButton } from "@/components/chat/AIChatButton";
+import { AIChatDialog } from "@/components/chat/AIChatDialog";
 
 const navItems = [
   { id: "members", icon: Users, label: "Study Buddies" },
@@ -71,7 +73,7 @@ export default function StudyGroupPage() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
-
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const { groupId } = useParams();
   const { user } = useAuth();
@@ -303,6 +305,15 @@ export default function StudyGroupPage() {
           </div>
         </main>
       </div>
+
+      <AIChatButton 
+        onClick={() => setIsAIChatOpen(true)} 
+        isOpen={isAIChatOpen} 
+      />
+      <AIChatDialog 
+        isOpen={isAIChatOpen} 
+        onClose={() => setIsAIChatOpen(false)} 
+      />
     </div>
   );
 }
