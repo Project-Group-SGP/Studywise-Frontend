@@ -8,6 +8,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "../providers/auth";
 import { Upload as UploadFile } from "lucide-react";
+
+import { Pause, Play, Square, Trash } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -29,6 +32,7 @@ import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { MessageContent } from "./Message";
 import { toast } from "sonner";
 import FileMessage from "./FIleMessage";
+import { useRecordAudio } from "@/hooks/useRecordAudio";
 
 interface PeerConnection {
   userId: string;
@@ -75,6 +79,41 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
   const { user } = useAuth();
   const userId = user?.id;
+
+  const {
+    isRecording,
+    duration,
+    audioUrl,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    resetRecording,
+  } = useRecordAudio();
+
+  const handleSendAudio = async () => {
+    if (!audioUrl) return;
+
+    const response = await fetch(audioUrl);
+    const blob = await response.blob();
+    const file = new File([blob], `audio_message_${Date.now()}.webm`, {
+      type: "audio/webm",
+    });
+
+    // Convert to buffer for socket.io
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
+
+    socket?.emit("uploadFile", {
+      file: buffer,
+      userId,
+      groupId,
+      fileType: file.type,
+      fileName: file.name,
+      metadata: { duration },
+    });
+
+    resetRecording();
+  };
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -463,13 +502,6 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     }, 1000);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
-      setFileDialogOpen(true);
-    }
-  };
-
   const handleFileUpload = async () => {
     if (!selectedFile) return;
     setIsUploading(true);
@@ -573,7 +605,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
     return (
       <Dialog open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md z-[1000]">
           <DialogHeader>
             <DialogTitle>Upload File</DialogTitle>
             <DialogDescription>
@@ -605,15 +637,20 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           ) : (
             <div className="space-y-4">
               {selectedFile && (
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <UploadFile className="h-6 w-6 text-gray-400" />
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <UploadFile className="h-6 w-6 flex-shrink-0 text-gray-400" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {selectedFile.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      <div className="flex items-center space-x-2">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]">
+                          {selectedFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                          ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                        </p>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {selectedFile.type || "Unknown type"}
                       </p>
                     </div>
                   </div>
@@ -622,6 +659,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedFile(null)}
+                      className="flex-shrink-0 ml-2"
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -639,7 +677,8 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
             </div>
           )}
 
-          <DialogFooter className="sm:justify-between">
+          {/* Fixed Footer with Buttons */}
+          <DialogFooter className="flex justify-between sm:justify-between items-center py-3">
             <Button
               type="button"
               variant="destructive"
@@ -806,6 +845,67 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           onSubmit={handleSendMessage}
           className="flex items-center space-x-3"
         >
+          <div className="flex items-center space-x-3">
+            {!isRecording && !audioUrl ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={startRecording}
+                className="bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600"
+              >
+                <Mic className="w-5 h-5 text-gray-500" />
+              </Button>
+            ) : (
+              <div className="flex items-center space-x-2">
+                {isRecording ? (
+                  <>
+                    <div className="text-sm text-red-500 animate-pulse">
+                      Recording: {duration}s
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={stopRecording}
+                      className="bg-red-50 hover:bg-red-100 dark:bg-red-900/20"
+                    >
+                      <Square className="w-4 h-4 text-red-500" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={cancelRecording}
+                      className="bg-gray-50 hover:bg-gray-100 dark:bg-gray-700"
+                    >
+                      <Trash className="w-4 h-4 text-gray-500" />
+                    </Button>
+                  </>
+                ) : (
+                  <div className="w-full flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSendAudio}
+                      className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20"
+                    >
+                      Send Audio
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={resetRecording}
+                      className="bg-gray-50 hover:bg-gray-100 dark:bg-gray-700"
+                    >
+                      <Trash className="w-4 h-4 text-gray-500" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <Input
             ref={inputRef}
             type="text"

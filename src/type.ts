@@ -73,3 +73,9 @@ export interface Session {
     name: string;
   };
 }
+
+export interface AudioRecordingState {
+  isRecording: boolean;
+  duration: number;
+  audioUrl: string | null;
+}

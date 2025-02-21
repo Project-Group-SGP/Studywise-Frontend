@@ -150,19 +150,41 @@ const FileMessage = ({ file }: { file: FileMessageProps }) => {
 
   if (file.fileType.startsWith("audio/")) {
     return (
-      <div className="max-w-sm rounded-xl p-3 bg-white dark:bg-zinc-800 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="rounded-full bg-blue-100 dark:bg-blue-900/50 p-2 text-blue-600 dark:text-blue-400">
-            {getFileIcon()}
+      <div className="w-96 rounded-xl bg-white dark:bg-zinc-800 shadow-sm">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="rounded-full bg-blue-100/50 dark:bg-blue-900/30 p-3">
+              <Music className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">
+                {file.name}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {formatFileSize(file.size)}
+                {file.metadata?.duration &&
+                  ` • ${formatDuration(file.metadata.duration)}`}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full hover:bg-gray-100 dark:hover:bg-zinc-700"
+              onClick={handleDownload}
+            >
+              <Download className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </Button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">
-              {file.name}
-            </p>
-            <audio controls className="w-full mt-2 h-8">
+          <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-lg p-3">
+            <audio controls className="w-full h-10">
               <source src={file.url} type={file.fileType} />
             </audio>
           </div>
+          {file.caption && (
+            <p className="text-sm mt-3 text-gray-700 dark:text-gray-300">
+              {file.caption}
+            </p>
+          )}
         </div>
       </div>
     );
