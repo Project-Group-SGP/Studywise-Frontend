@@ -840,10 +840,10 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       </ScrollArea>
 
       {/* Input Section */}
-      <div className="p-6 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+      <div className="w-full bg-white dark:bg-gray-800 border-t dark:border-gray-700">
         <form
           onSubmit={handleSendMessage}
-          className="flex items-center space-x-3"
+          className="w-full flex items-center space-x-3 p-3"
         >
           <div className="flex items-center space-x-3">
             {!isRecording && !audioUrl ? (
@@ -906,6 +906,8 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
               </div>
             )}
           </div>
+
+          {/* Make sure input takes the full width */}
           <Input
             ref={inputRef}
             type="text"
@@ -913,8 +915,9 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleTyping}
             placeholder="Type your message..."
-            className="flex-1 bg-gray-50 dark:bg-gray-700 border-0 focus-visible:ring-1 focus-visible:ring-primary"
+            className="flex-1 w-full bg-gray-50 dark:bg-gray-700 border-0 focus-visible:ring-1 focus-visible:ring-primary"
           />
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -926,8 +929,8 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                 <Smile className="w-5 h-5 text-gray-500" />
               </Button>
             </PopoverTrigger>
-            {/* Add this inside the form before the emoji picker */}
 
+            {/* File Upload Button */}
             <Button
               type="button"
               variant="outline"
@@ -937,6 +940,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
             >
               <UploadFile className="w-5 h-5 text-gray-500" />
             </Button>
+
             <PopoverContent align="end" className="p-0">
               <EmojiPicker
                 onEmojiClick={(emoji) =>
@@ -949,11 +953,13 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
               />
             </PopoverContent>
           </Popover>
+
           <Button type="submit" className="bg-primary hover:bg-primary/90">
             <Send className="w-4 h-4" />
           </Button>
         </form>
       </div>
+
       <FileUploadDialog />
     </div>
   );
