@@ -183,8 +183,20 @@ export default function GroupsPage() {
               />
               <JoinGroupDialog />
             </div>
+            {/* <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground bg-transparent" />
+              <Input
+                type="text"
+                placeholder="Search groups..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full bg-background/50 backdrop-blur-sm"
+              />
+            </div> */}
             <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+                <Search className="text-muted-foreground h-5 w-5 mr-2" />
+              </div>
               <Input
                 type="text"
                 placeholder="Search groups..."
@@ -193,6 +205,7 @@ export default function GroupsPage() {
                 className="pl-10 w-full bg-background/50 backdrop-blur-sm"
               />
             </div>
+
           </div>
 
           {/* Tab Navigation */}

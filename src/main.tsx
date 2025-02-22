@@ -16,7 +16,7 @@ import "./style.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      \{/* custom cursor */}
+      {/* custom cursor */}
       {/* <CustomCursor /> */}
       <AuthProvider>
         <SessionProvider>
