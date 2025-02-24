@@ -43,6 +43,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { AIChatButton } from "@/components/chat/AIChatButton";
 import { AIChatDialog } from "@/components/chat/AIChatDialog";
+import { Whiteboard } from "@/components/whiteboard";
 
 const navItems = [
   { id: "members", icon: Users, label: "Study Buddies" },
@@ -261,7 +262,7 @@ export default function StudyGroupPage() {
                 {activeTab === "members" && <Member groupData={groupData} />}
                 {activeTab === "chat" && groupId && <Chat groupId={groupId} />}
                 {activeTab === "sessions" && <Session />}
-                {activeTab === "whiteboard" && <div>Whiteboard</div>}
+                {activeTab === "whiteboard" && <Whiteboard />}
               </>
             )}
           </div>
