@@ -263,13 +263,13 @@ export default function StudyGroupPage() {
             {isLoading ? (
               <Skeleton className="h-[400px] w-full" />
             ) : (
-              <>
+              <div className="w-full">
                 {activeTab === "members" && <Member groupData={groupData} />}
                 {activeTab === "chat" && groupId && <Chat groupId={groupId} />}
                 {activeTab === "sessions" && <Session />}
                 {activeTab === "whiteboard" && <Whiteboard />}
                 {activeTab === "diagram" && <Diagram />}
-              </>
+              </div>
             )}
           </div>
 
