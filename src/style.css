@@ -76,28 +76,28 @@ html {
 
 /* Webkit browsers (Chrome, Safari, etc.) */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 0px;
+  height: 0px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+/* ::-webkit-scrollbar-thumb {
   background: hsl(var(--scrollbar) / 0.5);
   border-radius: 10px;
-}
+} */
 
-::-webkit-scrollbar-thumb:hover {
+/* ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--scrollbar) / 0.7);
-}
+} */
 
 /* Firefox */
-* {
+/* * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--scrollbar) / 0.5) transparent;
-}
+} */
 
 /* Hide scrollbar when not scrolling */
 ::-webkit-scrollbar-thumb {
