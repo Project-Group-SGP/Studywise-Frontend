@@ -9,7 +9,7 @@ interface IRenameModal {
   onClose:()=>void;
 }
 
-interface Boards {
+export interface Board {
   id: string;
   title: string;
   imageurl: string;
@@ -18,14 +18,15 @@ interface Boards {
   createdAt: number;
   groupId: string;
   isFavorite: boolean;
-}[];
+};
 
 interface BoardsState {
-  initialValue: Boards[];
-  setBoards: (boards: Boards[]) => void;
-  addBoard: (board: Boards) => void;
+  initialValue: Board[];
+  setBoards: (boards: Board[]) => void;
+  addBoard: (board: Board) => void;
   removeBoard: (id: string) => void;
   updatetitle: (id: string, title: string) => void;
+  setIsFavorite: (id: string, isFavorite: boolean) => void;
 }
 
 export const useRenameModal = create<IRenameModal>((set) => ({
@@ -41,4 +42,5 @@ export const useBoards = create<BoardsState>((set) => ({
   addBoard: (board) => set((state) => ({ initialValue: [...state.initialValue, board] })),
   removeBoard: (id) => set((state) => ({ initialValue: state.initialValue.filter((board) => board.id !== id) })),
   updatetitle: (id, title) => set((state) => ({ initialValue: state.initialValue.map((board) => (board.id === id ? { ...board, title } : board)) })),
+  setIsFavorite: (id, isFavorite) => set((state) => ({ initialValue: state.initialValue.map((board) => (board.id === id ? { ...board, isFavorite } : board)) })),
 }));

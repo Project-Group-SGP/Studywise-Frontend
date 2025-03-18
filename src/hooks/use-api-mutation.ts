@@ -1,10 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { useSearchParams } from "react-router";
 
 export const useApiMutation = (endpoint: string) => {
   const [isLoading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
 
   const mutate = async (payload: any) => {
     setLoading(true);

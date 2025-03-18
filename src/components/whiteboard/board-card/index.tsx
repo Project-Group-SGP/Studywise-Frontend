@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { Footer } from "./footer";
 import { useAuth } from "@/components/providers/auth";
 import { useLocation } from "react-router";
+import { useBoards } from "@/store/use-rename-modal";
 
 
 interface BoardCardProps{
@@ -39,7 +40,7 @@ export const BoardCard = ({
     addSuffix:true
   });
 
-  console.log(JSON.stringify({id,title,imageurl,authorId,authorName,createdAt,groupId}));
+  // console.log(JSON.stringify({id,title,imageurl,authorId,authorName,createdAt,groupId}));
 
   const {mutate:onFavorite,isLoading:loadingFavorite} = useApiMutation(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/favorite/${id}`); 
 
@@ -47,15 +48,25 @@ export const BoardCard = ({
 
   const location = useLocation();
 
+  const {setIsFavorite} = useBoards();
+
   const toggleFavorite = () => {
     if(isFavorite){
       console.log("unFavorite",id);
       unfavorite({id})
+        .then(()=>{
+          setIsFavorite(id,false);
+          toast.success("Board unfavorited");
+        })
         .catch((e)=>{
-          toast.error("Failed to unfavorite board",e);
+          toast.error("Failed to unfavorite board",e.message);
         });
     }else{
       onFavorite({id,groupId})
+      .then(()=>{
+        setIsFavorite(id,true);
+        toast.success("Board favorited");
+      })
       .catch((e)=>{
         toast.error(`Failed to favorite board ${e}`);
       });

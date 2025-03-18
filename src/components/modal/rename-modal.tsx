@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useRenameModal } from "@/store/use-rename-modal";
+import { useBoards, useRenameModal } from "@/store/use-rename-modal";
 import { FormEventHandler, useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -20,6 +20,7 @@ export const RenameModal = () => {
   const { groupId } = useParams<{ groupId: string }>();
   
   const {isOpen,onClose,initialValues} = useRenameModal();
+  const {updatetitle} = useBoards();
   const {mutate,isLoading} = useApiMutation(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/rename/${initialValues.id}`);
   const [title,setTitle] = useState(initialValues.title); 
 
@@ -33,6 +34,7 @@ export const RenameModal = () => {
     mutate({
       title
     }).then(()=>{
+      updatetitle(initialValues.id,title);
       toast.success("Board title updated");
       onClose();
     }).catch(()=>{

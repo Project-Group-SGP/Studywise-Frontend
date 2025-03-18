@@ -9,7 +9,7 @@ import { Link2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { Button } from "./ui/button";
-import { useRenameModal } from "@/store/use-rename-modal";
+import { useBoards, useRenameModal } from "@/store/use-rename-modal";
 import { ConfirModle } from "./conform-modle";
 import { useParams } from "react-router";
 
@@ -31,6 +31,7 @@ export const Actions=({
 
   const { groupId } = useParams<{ groupId: string }>();
   const {onOpen} = useRenameModal();
+  const {removeBoard} = useBoards();
 
   const {mutate,isLoading}=useApiMutation(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/delete/${id}`);
 
@@ -47,6 +48,8 @@ export const Actions=({
   const onDelete=()=>{
     mutate({})
     .then(()=>{
+      console.log("Remove board",id);
+      removeBoard(id);
       toast.success("Board deleted");
     })
     .catch(()=>{

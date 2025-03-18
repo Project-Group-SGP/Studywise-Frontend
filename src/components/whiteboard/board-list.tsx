@@ -4,6 +4,7 @@ import axios from 'axios';
 import { EmptyBoard, EmptyFavorites, EmptySearch } from './empty-board';
 import { BoardCard } from './board-card';
 import { NewBoardButton } from './new-board-button';
+import { Board, useBoards } from '@/store/use-rename-modal';
 
 interface BoardListProps {
   groupId: string;
@@ -11,9 +12,9 @@ interface BoardListProps {
 
 export const BoardList = ({ groupId }: BoardListProps) => {
   const [searchParams] = useSearchParams();
-  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const {initialValue,setBoards} = useBoards();
+  const [data, setData] = useState<Board[]>(initialValue);
   const query = {
     search: searchParams.get("Search") || "",
     favorites: searchParams.get("favorites") || "",
@@ -33,9 +34,25 @@ export const BoardList = ({ groupId }: BoardListProps) => {
           },
           withCredentials: true,
         });
+        console.log(response.data);
+
+        //@ts-ignore
+        const result = response.data.map((board)=>{
+          return {
+            id: board.id,
+            title: board.title,
+            authorId: board.authorId,
+            authorName: board.authorName,
+            imageurl: board.imageUrl,
+            groupId: board.groupId,
+            createdAt: board.createdAt,
+            updatedAt: board.updatedAt,
+          }
+        });
         
-        
-        setData(response.data);
+        setBoards(result);
+        setData(initialValue);
+
       } catch (error) {
         console.error('Error fetching boards:', error);
       } finally {
@@ -44,7 +61,35 @@ export const BoardList = ({ groupId }: BoardListProps) => {
     };
 
     fetchBoards();
-  }, [groupId, query.favorites, query.search]);
+  }, [groupId]);
+
+  useEffect(() => {
+    if (initialValue.length > 0) {
+      if (query.search) {
+        const filteredData = initialValue.filter(board => 
+          board.title.toLowerCase().includes(query.search.toLowerCase())
+        );
+        setData(filteredData);
+      } else {
+        setData(initialValue);
+      }
+    }
+  }, [query.search, initialValue]);
+  
+  useEffect(() => {
+    if (initialValue.length > 0) {
+      if (query.favorites) {
+        const favoriteBoards = initialValue.filter(board => board.isFavorite);
+        setData(favoriteBoards);
+      } else {
+        setData(initialValue);
+      }
+    }
+  }, [query.favorites, initialValue]);
+
+  useEffect(()=>{
+    setData(initialValue);
+  },[initialValue])
 
   
   if (loading) {
@@ -81,7 +126,7 @@ export const BoardList = ({ groupId }: BoardListProps) => {
   }
 
 
-
+  console.log("Boards for store:",{data,initialValue});
   return (
     <div>
       <h2 className="text-3xl">
@@ -95,7 +140,7 @@ export const BoardList = ({ groupId }: BoardListProps) => {
             id={board.id}
             groupId={groupId}
             title={board.title}
-            imageurl={board.imageUrl}
+            imageurl={board.imageurl}
             authorId={board.authorId}
             authorName={board.authorName}
             createdAt={board.createdAt}
