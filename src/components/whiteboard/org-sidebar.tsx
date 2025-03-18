@@ -3,9 +3,8 @@ import { Button } from "../ui/button";
 import { LayoutDashboard, Star } from "lucide-react";
 import { SearchInput } from "./search-input";
 
-
 export const OrgSidebar = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
     const searchParams = new URLSearchParams(window.location.search);
     const favorites = searchParams.get("favorites") === "true";
 

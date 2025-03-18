@@ -10,7 +10,7 @@ export const useApiQuery = (endpoint:string, params:any) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(endpoint, { params });
+        const response = await axios.get(endpoint, { params,withCredentials:true });
         setData(response.data);
       } catch (error) {
         setError(error);

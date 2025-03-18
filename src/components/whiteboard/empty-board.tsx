@@ -3,19 +3,25 @@ import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import { useLocation } from "react-router";
 
 export const EmptyBoard = () => {
   const navigate = useNavigate();
   const { groupId } = useParams();
-  const { mutate, isLoading } = useApiMutation(`/api/${groupId}/board/create`);
+  const { mutate, isLoading } = useApiMutation(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/create`);
+  const location = useLocation();
 
   const onClick = () => {
       mutate({ title: "Untitled" })
           .then((id) => {
               toast.success("Board created");
-              navigate(`/board/${id}`);
+              const currentPath = location.pathname;
+              const boardPath = `${currentPath}/board/${id}`;
+              
+              navigate(boardPath);
           })
-          .catch(() => {
+          .catch((e) => {
+              console.log("Error :",e);
               toast.error("Failed to create board");
           });
   };
