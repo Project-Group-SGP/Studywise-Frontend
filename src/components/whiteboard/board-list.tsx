@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import {  useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '../ui/button';
-import { EmptyBoard } from './empty-board';
+import { EmptyBoard, EmptyFavorites, EmptySearch } from './empty-board';
 import { BoardCard } from './board-card';
+import { NewBoardButton } from './new-board-button';
+import { Board, useBoards } from '@/store/use-rename-modal';
 
 interface BoardListProps {
   groupId: string;
@@ -11,16 +12,16 @@ interface BoardListProps {
 
 export const BoardList = ({ groupId }: BoardListProps) => {
   const [searchParams] = useSearchParams();
-  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
+  const {initialValue,setBoards} = useBoards();
+  const [data, setData] = useState<Board[]>(initialValue);
   const query = {
-    search: searchParams.get("search") || "",
+    search: searchParams.get("Search") || "",
     favorites: searchParams.get("favorites") || "",
   };
 
   useEffect(() => {
+    searchParams.delete("fetch");
     const fetchBoards = async () => {
       try {
         const endpoint = query.favorites
@@ -28,10 +29,30 @@ export const BoardList = ({ groupId }: BoardListProps) => {
           : `${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/list`;
         
         const response = await axios.get(endpoint, {
-          params: query.search ? { search: query.search } : undefined
+          params: {
+            search: query.search,
+          },
+          withCredentials: true,
+        });
+        console.log(response.data);
+
+        //@ts-ignore
+        const result = response.data.map((board)=>{
+          return {
+            id: board.id,
+            title: board.title,
+            authorId: board.authorId,
+            authorName: board.authorName,
+            imageurl: board.imageUrl,
+            groupId: board.groupId,
+            createdAt: board.createdAt,
+            updatedAt: board.updatedAt,
+          }
         });
         
-        setData(response.data);
+        setBoards(result);
+        setData(initialValue);
+
       } catch (error) {
         console.error('Error fetching boards:', error);
       } finally {
@@ -40,12 +61,37 @@ export const BoardList = ({ groupId }: BoardListProps) => {
     };
 
     fetchBoards();
-  }, [groupId, query.favorites, query.search]);
+  }, [groupId]);
 
-  const handleCreateBoard = () => {
-    navigate(`/groups/${groupId}/board/new`);
-  };
+  useEffect(() => {
+    if (initialValue.length > 0) {
+      if (query.search) {
+        const filteredData = initialValue.filter(board => 
+          board.title.toLowerCase().includes(query.search.toLowerCase())
+        );
+        setData(filteredData);
+      } else {
+        setData(initialValue);
+      }
+    }
+  }, [query.search, initialValue]);
+  
+  useEffect(() => {
+    if (initialValue.length > 0) {
+      if (query.favorites) {
+        const favoriteBoards = initialValue.filter(board => board.isFavorite);
+        setData(favoriteBoards);
+      } else {
+        setData(initialValue);
+      }
+    }
+  }, [query.favorites, initialValue]);
 
+  useEffect(()=>{
+    setData(initialValue);
+  },[initialValue])
+
+  
   if (loading) {
     return (
       <div>
@@ -53,7 +99,7 @@ export const BoardList = ({ groupId }: BoardListProps) => {
           {query.favorites ? "Favorite Boards" : "Group Boards"}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mt-8 pb-10">
-          <Button disabled>Create New Board</Button>
+          <NewBoardButton  groupId={groupId} disabled/>
           {[1, 2, 3, 4].map((n) => (
             <div key={n} className="aspect-[100/127] bg-gray-100 animate-pulse rounded-lg" />
           ))}
@@ -62,42 +108,39 @@ export const BoardList = ({ groupId }: BoardListProps) => {
     );
   }
 
-  if (!data?.length && query.search) {
+  if(data.length === 0 && !!query.favorites) {
     return (
-      <div className="h-full flex flex-col items-center justify-center">
-        <h2>No results found</h2>
-        <p>Try searching for something else</p>
-      </div>
-    );
+      <EmptyFavorites/>
+    )
   }
-
-  if (!data?.length && query.favorites) {
+  
+  if(data.length === 0 && !!query.search) {
     return (
-      <div className="h-full flex flex-col items-center justify-center">
-        <h2>No favorite boards</h2>
-        <p>Try favoriting some boards</p>
-      </div>
-    );
+      <EmptySearch/>
+    )
   }
-
+  
+  
   if (!data?.length) {
     return <EmptyBoard />;
   }
 
+
+  console.log("Boards for store:",{data,initialValue});
   return (
     <div>
       <h2 className="text-3xl">
         {query.favorites ? "Favorite Boards" : "Group Boards"}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mt-8 pb-10">
-        <Button onClick={handleCreateBoard}>Create New Board</Button>
+        <NewBoardButton  groupId={groupId}/>
         {data.map((board) => (
           <BoardCard
             key={board.id}
             id={board.id}
             groupId={groupId}
             title={board.title}
-            imageUrl={board.imageUrl}
+            imageurl={board.imageurl}
             authorId={board.authorId}
             authorName={board.authorName}
             createdAt={board.createdAt}
