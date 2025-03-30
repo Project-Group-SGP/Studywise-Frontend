@@ -9,7 +9,7 @@ import { io, Socket } from "socket.io-client";
 import { useAuth } from "../providers/auth";
 import { Upload as UploadFile } from "lucide-react";
 
-import { Pause, Play, Square, Trash } from "lucide-react";
+import { Square, Trash } from "lucide-react";
 
 import {
   Dialog,

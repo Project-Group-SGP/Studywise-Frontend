@@ -12,7 +12,7 @@ import Home from "./pages/Home.tsx";
 import NotFoundPage from "./pages/Notfoundpage.tsx";
 import { Toaster } from "sonner";
 import "./style.css";
-
+import { Board } from "./components/main-board/Board.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
@@ -38,6 +38,15 @@ createRoot(document.getElementById("root")!).render(
                   <ProtectedRoute>
                     <RegisterServiceWorker />
                     <StudyGroupPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/groups/:groupId/board/:boardId"
+                element={
+                  <ProtectedRoute>
+                    <RegisterServiceWorker/>
+                    <Board />
                   </ProtectedRoute>
                 }
               />

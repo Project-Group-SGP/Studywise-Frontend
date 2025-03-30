@@ -24,11 +24,7 @@ export const BoardList = ({ groupId }: BoardListProps) => {
     searchParams.delete("fetch");
     const fetchBoards = async () => {
       try {
-        const endpoint = query.favorites
-          ? `${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/favorites`
-          : `${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/list`;
-        
-        const response = await axios.get(endpoint, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}/board/list`, {
           params: {
             search: query.search,
           },
@@ -43,15 +39,16 @@ export const BoardList = ({ groupId }: BoardListProps) => {
             title: board.title,
             authorId: board.authorId,
             authorName: board.authorName,
-            imageurl: board.imageUrl,
+            imageurl: board.imageurl,
             groupId: board.groupId,
             createdAt: board.createdAt,
             updatedAt: board.updatedAt,
+            isFavorite: board.isFavorited
           }
         });
         
         setBoards(result);
-        setData(initialValue);
+        setData(result);
 
       } catch (error) {
         console.error('Error fetching boards:', error);
@@ -98,7 +95,7 @@ export const BoardList = ({ groupId }: BoardListProps) => {
         <h2 className="text-3xl">
           {query.favorites ? "Favorite Boards" : "Group Boards"}
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mt-8 pb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 mt-8 pb-10">
           <NewBoardButton  groupId={groupId} disabled/>
           {[1, 2, 3, 4].map((n) => (
             <div key={n} className="aspect-[100/127] bg-gray-100 animate-pulse rounded-lg" />
@@ -132,8 +129,8 @@ export const BoardList = ({ groupId }: BoardListProps) => {
       <h2 className="text-3xl">
         {query.favorites ? "Favorite Boards" : "Group Boards"}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mt-8 pb-10">
-        <NewBoardButton  groupId={groupId}/>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 mt-8 pb-10">
+       {!query.favorites  &&  <NewBoardButton  groupId={groupId}/>}
         {data.map((board) => (
           <BoardCard
             key={board.id}
