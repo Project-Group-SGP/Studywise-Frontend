@@ -56,10 +56,7 @@ export const Text = ({
       <ContentEditable
         html={value||"Text"}
         onChange={handleContentChange}
-        className={cn(
-          "h-full w-full flex items-center justify-center text-center drop-shadow-md outline-none",
-          "font-kamal"
-        )}
+        className="h-full w-full flex items-center justify-center text-center drop-shadow-md outline-none font-kamal"
         style={{
           color:fill?colotToCss(fill):"#000"
         }}

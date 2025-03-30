@@ -36,7 +36,7 @@ export const Note = ({
     newValue:string
   )=>{
     const liveLayers = storage.get("layers");
-
+  //@ts-ignore
     liveLayers?.get(id)?.set("value",newValue);
   },[]);
 
@@ -61,10 +61,8 @@ export const Note = ({
       <ContentEditable
         html={value || "Text"}
         onChange={handleContentChange}
-        className={cn(
-          "h-full w-full flex items-center justify-center text-center outline-none",
-          "font-kamal"
-        )}
+        className=
+          "h-full w-full flex items-center justify-center text-center outline-none font-kamal"
         style={{
           color:fill?getContrastingTextColor(fill):"#000"
         }}

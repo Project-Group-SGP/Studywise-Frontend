@@ -1,5 +1,6 @@
 import { Hint } from "@/components/hint";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
 interface ToolButtonProps {
@@ -25,7 +26,7 @@ export const ToolButton = ({
         size={"icon"}
         variant={isActive ? "boardActive" : "board"}
       >
-        <Icon/>
+        <Icon className="h-5 w-5" />
       </Button>
     </Hint>
   );

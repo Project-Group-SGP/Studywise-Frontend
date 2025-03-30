@@ -1,129 +1,286 @@
-import { init } from "next/dist/compiled/webpack/webpack";
+// import { init } from "next/dist/compiled/webpack/webpack";
+
+// export type Color = {
+//   r:number,
+//   g:number,
+//   b:number
+// }
+
+// export type Camera = {
+//   x:number,
+//   y:number
+// }
+
+// export enum LayerType{
+//   Reactangle,
+//   Ellipse,
+//   Path,
+//   Text,
+//   Note,
+// };
+
+// export type ReactangleLayer = {
+//   type:LayerType.Reactangle,
+//   x:number,
+//   y:number,
+//   width:number,
+//   height:number,
+//   fill:Color,
+//   value?:string,
+// };
+
+// export type EllipseLayer = {
+//   type:LayerType.Ellipse,
+//   x:number,
+//   y:number,
+//   width:number,
+//   height:number,
+//   fill:Color,
+//   value?:string,
+// };
+
+// export type PathLayer = {
+//   type:LayerType.Path,
+//   x:number,
+//   y:number,
+//   width:number,
+//   height:number,
+//   fill:Color,
+//   points?:number[][],
+//   value?:string,
+// };
+
+// export type TextLayer = {
+//   type:LayerType.Text,
+//   x:number,
+//   y:number,
+//   width:number,
+//   height:number,
+//   fill:Color,
+//   value?:string,
+// };
+
+// export type NoteLayer = {
+//   type:LayerType.Note,
+//   x:number,
+//   y:number,
+//   width:number,
+//   height:number,
+//   fill:Color,
+//   value?:string,
+// };
+
+// export type Point={
+//   x:number,
+//   y:number
+// };
+
+// export type XYWH = {
+//   x:number,
+//   y:number,
+//   width:number,
+//   height:number
+// };
+
+// export enum Side {
+//   Top=1,
+//   Bottom=2,
+//   Left=4,
+//   Right=8,
+// };
+
+
+
+// export type CanvasState =
+//   | {
+//     mode:CanvasMode.None,
+//     }
+//   | {
+//       mode:CanvasMode.SelectionNet,
+//       origin:Point;
+//       current?:Point;
+//     }
+//   | {
+//       mode:CanvasMode.Translating,
+//       current:Point
+//     }
+//   | {
+//       mode:CanvasMode.Pressing,
+//       origin:Point;
+
+//     }
+//   | {
+//       mode:CanvasMode.Inserting,
+//       layerType:LayerType.Ellipse | LayerType.Reactangle | LayerType.Text | LayerType.Note;
+//     }
+//   | {
+//       mode:CanvasMode.Resizing,
+//       initialBounds:XYWH,
+//       corner:Side;
+//     }
+//   |{
+//       mode:CanvasMode.Pencil
+//     };
+
+
+// export enum CanvasMode{
+//   None,
+//   Pressing,
+//   SelectionNet,
+//   Translating,
+//   Inserting,
+//   Resizing,
+//   Pencil,
+// };
+
+// export type Layer = ReactangleLayer | EllipseLayer | PathLayer | TextLayer | NoteLayer;
 
 export type Color = {
-  r:number,
-  g:number,
-  b:number
+  r: number,
+  g: number,
+  b: number
 }
 
 export type Camera = {
-  x:number,
-  y:number
+  x: number,
+  y: number
 }
 
-export enum LayerType{
+export enum LayerType {
   Reactangle,
   Ellipse,
   Path,
   Text,
   Note,
+  Triangle,
+  Hexagon,
+  Star,
+  Diamond,
+  Pentagon,
 };
 
 export type ReactangleLayer = {
-  type:LayerType.Reactangle,
-  x:number,
-  y:number,
-  width:number,
-  height:number,
-  fill:Color,
-  value?:string,
+  type: LayerType.Reactangle,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
 };
 
 export type EllipseLayer = {
-  type:LayerType.Ellipse,
-  x:number,
-  y:number,
-  width:number,
-  height:number,
-  fill:Color,
-  value?:string,
+  type: LayerType.Ellipse,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
 };
 
 export type PathLayer = {
-  type:LayerType.Path,
-  x:number,
-  y:number,
-  width:number,
-  height:number,
-  fill:Color,
-  points?:number[][],
-  value?:string,
+  type: LayerType.Path,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  points?: number[][],
+  value?: string,
 };
 
 export type TextLayer = {
-  type:LayerType.Text,
-  x:number,
-  y:number,
-  width:number,
-  height:number,
-  fill:Color,
-  value?:string,
+  type: LayerType.Text,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
 };
 
 export type NoteLayer = {
-  type:LayerType.Note,
-  x:number,
-  y:number,
-  width:number,
-  height:number,
-  fill:Color,
-  value?:string,
+  type: LayerType.Note,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
 };
 
-export type Point={
-  x:number,
-  y:number
+export type TriangleLayer = {
+  type: LayerType.Triangle,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
+};
+
+export type HexagonLayer = {
+  type: LayerType.Hexagon,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
+};
+
+export type StarLayer = {
+  type: LayerType.Star,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  points?: number, // Number of points in the star (default: 5)
+  value?: string,
+};
+
+export type DiamondLayer = {
+  type: LayerType.Diamond,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
+};
+
+export type PentagonLayer = {
+  type: LayerType.Pentagon,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  value?: string,
+};
+
+export type Point = {
+  x: number,
+  y: number
 };
 
 export type XYWH = {
-  x:number,
-  y:number,
-  width:number,
-  height:number
+  x: number,
+  y: number,
+  width: number,
+  height: number
 };
 
 export enum Side {
-  Top=1,
-  Bottom=2,
-  Left=4,
-  Right=8,
+  Top = 1,
+  Bottom = 2,
+  Left = 4,
+  Right = 8,
 };
 
-
-
-export type CanvasState =
-  | {
-    mode:CanvasMode.None,
-    }
-  | {
-      mode:CanvasMode.SelectionNet,
-      origin:Point;
-      current?:Point;
-    }
-  | {
-      mode:CanvasMode.Translating,
-      current:Point
-    }
-  | {
-      mode:CanvasMode.Pressing,
-      origin:Point;
-
-    }
-  | {
-      mode:CanvasMode.Inserting,
-      layerType:LayerType.Ellipse | LayerType.Reactangle | LayerType.Text | LayerType.Note;
-    }
-  | {
-      mode:CanvasMode.Resizing,
-      initialBounds:XYWH,
-      corner:Side;
-    }
-  |{
-      mode:CanvasMode.Pencil
-    };
-
-
-export enum CanvasMode{
+export enum CanvasMode {
   None,
   Pressing,
   SelectionNet,
@@ -133,4 +290,53 @@ export enum CanvasMode{
   Pencil,
 };
 
-export type Layer = ReactangleLayer | EllipseLayer | PathLayer | TextLayer | NoteLayer;
+export type Layer = 
+  | ReactangleLayer 
+  | EllipseLayer 
+  | PathLayer 
+  | TextLayer 
+  | NoteLayer
+  | TriangleLayer
+  | HexagonLayer
+  | StarLayer
+  | DiamondLayer
+  | PentagonLayer;
+
+export type CanvasState =
+  | {
+    mode: CanvasMode.None,
+    }
+  | {
+      mode: CanvasMode.SelectionNet,
+      origin: Point;
+      current?: Point;
+    }
+  | {
+      mode: CanvasMode.Translating,
+      current: Point
+    }
+  | {
+      mode: CanvasMode.Pressing,
+      origin: Point;
+    }
+  | {
+      mode: CanvasMode.Inserting,
+      layerType: 
+        | LayerType.Ellipse 
+        | LayerType.Reactangle 
+        | LayerType.Text 
+        | LayerType.Note
+        | LayerType.Triangle
+        | LayerType.Hexagon
+        | LayerType.Star
+        | LayerType.Diamond
+        | LayerType.Pentagon;
+    }
+  | {
+      mode: CanvasMode.Resizing,
+      initialBounds: XYWH,
+      corner: Side;
+    }
+  | {
+      mode: CanvasMode.Pencil
+    };

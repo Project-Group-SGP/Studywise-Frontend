@@ -16,7 +16,6 @@ import { Path } from "./Path";
 import { useDisableSchrollBounce } from "../../../hooks/use-sisable-scroll-bounce";
 import { useDeleteLayers } from "../../../hooks/use-delete-layers";
 import { useParams } from "react-router";
-// import { headers } from "next/headers";
 
 const MAX_LAYERS = 100;
 
@@ -81,7 +80,7 @@ export const Canvas = () => {
 
   const insertLayer = useMutation((
     {storage,setMyPresence},
-    layerType:LayerType.Ellipse | LayerType.Reactangle | LayerType.Text | LayerType.Path |LayerType.Note,
+    layerType:LayerType.Ellipse | LayerType.Reactangle | LayerType.Text | LayerType.Path |LayerType.Note | LayerType.Diamond |LayerType.Hexagon |LayerType.Pentagon |LayerType.Star |LayerType.Triangle,
     position: Point
   )=>{
     const liveLayers = storage.get("layers");
@@ -102,10 +101,10 @@ export const Canvas = () => {
       fill: lastUsedColor,
     });
 
-    //console.log({newlayer});
+    console.log({newlayer});
     //@ts-ignore
     liveLayersIds?.push(layerId);
-        //@ts-ignore
+    //@ts-ignore
     liveLayers?.set(layerId, newlayer!);
 
     setMyPresence({selection:[layerId]},{addToHistory:true});

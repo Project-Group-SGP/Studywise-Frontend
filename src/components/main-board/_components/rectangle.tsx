@@ -14,7 +14,6 @@ export const Rectangle = ({
   onLayerPointerDown,
   selectionColor
 }:ReactangleProps) => {
-  //console.log({id,layer},"REACTANGLE");
   const {x,y,width,height,fill}=layer;
 
   return(
@@ -28,6 +27,5 @@ export const Rectangle = ({
     fill={fill?colotToCss(fill):"#000"} // Default to black if no fill is specified
     stroke={selectionColor||"transparent"}
   />
-  
   )
 }

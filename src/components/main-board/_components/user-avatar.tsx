@@ -29,7 +29,6 @@ export const UserAvatar = ({
         <AvatarFallback className="text-xs font-semibold">
           {fallback}
         </AvatarFallback>
-
       </Avatar> 
     </Hint>
   )

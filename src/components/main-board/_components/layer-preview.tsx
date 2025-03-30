@@ -7,6 +7,11 @@ import { Text } from "./text";
 import { Note } from "./note";
 import { Path } from "./Path";
 import { colotToCss } from "@/lib/utils";
+import { Triangle } from "./triangle";
+import { Star } from "./star";
+import { Diamond } from "./diamond";
+import { Hexagon } from "./hexagon";
+import { Pentagon } from "./pentagon";
 interface LayerPreviewProps {
   id:string;
   onLayerPointerDown:(e:React.PointerEvent,layerId:string)=> void;
@@ -18,6 +23,8 @@ export const LayerPreview = memo(({
   onLayerPointerDown,
   selectionColor
 }:LayerPreviewProps) => {
+
+  //@ts-ignore
   const layer = useStorage((root)=>root?.layers?.get(id));
 
   if(!layer) return null;
@@ -73,6 +80,51 @@ export const LayerPreview = memo(({
             selectionColor={selectionColor}
           />
       );
+    case LayerType.Triangle:
+      return (
+        <Triangle
+          id={id}
+          onLayerPointerDown={onLayerPointerDown}
+          layer={layer}
+          selectionColor={selectionColor}
+        />
+    )
+    case LayerType.Star:
+      return (
+        <Star
+          id={id}
+          onLayerPointerDown={onLayerPointerDown}
+          layer={layer}
+          selectionColor={selectionColor}
+        />
+      )
+    case LayerType.Diamond:
+      return (
+        <Diamond
+          id={id}
+          onLayerPointerDown={onLayerPointerDown}
+          layer={layer}
+          selectionColor={selectionColor}
+        />
+    )
+    case LayerType.Hexagon:
+      return (
+        <Hexagon
+          id={id}
+          onLayerPointerDown={onLayerPointerDown}
+          layer={layer}
+          selectionColor={selectionColor}
+        />
+      )
+    case LayerType.Pentagon:
+      return (
+        <Pentagon
+          id={id}
+          onLayerPointerDown={onLayerPointerDown}
+          layer={layer}
+          selectionColor={selectionColor}
+        />
+      )
     default:
       console.warn("Unknown layer type",layer);
       return null;

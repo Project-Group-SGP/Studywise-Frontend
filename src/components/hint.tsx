@@ -24,8 +24,8 @@ return (
       <TooltipTrigger asChild>
         {children}
       </TooltipTrigger>
-      <TooltipContent side={side} align={align} sideOffset={sideOffset} alignOffset={alignOffset} className="text-white bg-black border-black rounded-md items-center flex justify-center">
-        <p className="semi-bold text-sm capitalize px-2 py-1"> 
+      <TooltipContent side={side} align={align} sideOffset={sideOffset} alignOffset={alignOffset} className="text-white bg-black border-black rounded-md items-center flex justify-center z-[100]">
+        <p className="semi-bold text-sm capitalize px-2 py-1 z-[100]"> 
           {lable}
         </p>
       </TooltipContent>

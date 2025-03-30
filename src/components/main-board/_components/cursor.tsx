@@ -1,7 +1,6 @@
 "use client";
 
 import { connectionIdToColor } from "@/lib/utils";
-import { Point } from "@/types/canvas";
 import { useOther } from "@liveblocks/react/suspense";
 import { MousePointer2 } from "lucide-react";
 import { memo } from "react";
