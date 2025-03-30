@@ -819,7 +819,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
               Study Group Chat
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Active Members: {typingUsers.size}
+              Active Members: {activeGroupCall?.participants.length}
               {activeGroupCall && (
                 <span className="ml-2 text-green-500">
                   • Call active ({activeGroupCall.participants.length} participant{activeGroupCall.participants.length !== 1 ? 's' : ''})
