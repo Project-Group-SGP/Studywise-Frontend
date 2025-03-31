@@ -24,6 +24,7 @@ export enum LayerType {
   ArrowLine,
   CurvedLine,
   ZigzagLine,
+  SVGImage, 
 };
 
 export type ReactangleLayer = {
@@ -205,6 +206,19 @@ export type ZigzagLineLayer = {
   value?: string,
 };
 
+// New SVGImage layer type
+export type SVGImageLayer = {
+  type: LayerType.SVGImage,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  svgContent: string, // Store the SVG content
+  viewBox?: string,   // Store the viewBox attribute
+  value?: string,     // Optional caption or description
+};
+
 // Update your Layer type union
 export type Layer = 
   | ReactangleLayer 
@@ -220,7 +234,8 @@ export type Layer =
   | StraightLineLayer
   | ArrowLineLayer
   | CurvedLineLayer
-  | ZigzagLineLayer;
+  | ZigzagLineLayer
+  | SVGImageLayer;  // Added new layer type
 
 // Update CanvasState for the Inserting mode
 export type CanvasState =
@@ -255,7 +270,8 @@ export type CanvasState =
         | LayerType.StraightLine
         | LayerType.ArrowLine
         | LayerType.CurvedLine
-        | LayerType.ZigzagLine;
+        | LayerType.ZigzagLine
+        | LayerType.SVGImage;  // Added SVGImage to supported insertion types
     }
   | {
       mode: CanvasMode.Resizing,

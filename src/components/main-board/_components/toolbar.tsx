@@ -252,6 +252,7 @@ import { ToolButton } from "./tool-button";
 import { CanvasMode, CanvasState, LayerType } from "@/types/canvas";
 import SvgDownloader from "./svg-download-button";
 import { useRenameModal } from "@/store/use-rename-modal";
+import SvgUploader from "./svg-upload";
 
 interface ToolbarProps {
   canvasState: CanvasState;
@@ -404,6 +405,13 @@ export const Toolbar = ({
           }}
           isActive={canvasState.mode === CanvasMode.Pencil}
         />
+        {/* <SvgUploader 
+            targetSvgId="mySvg"
+            onSvgLoaded={(svgContent) => {
+              // You can process the SVG content here if needed
+              console.log('SVG loaded successfully');
+            }}
+          /> */}
         <SvgDownloader
           svgId="mySvg"
           fileName={`${initialValues.title}.svg`}
