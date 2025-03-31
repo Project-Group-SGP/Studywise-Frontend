@@ -3,7 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getGroupItems } from "@/lib/group-api";
-import { Book, Mic, PhoneCall, Send, Smile, Upload as UploadFile, Users, X } from "lucide-react";
+import {
+  Book,
+  Mic,
+  PhoneCall,
+  Send,
+  Smile,
+  Upload as UploadFile,
+  Users,
+  X,
+} from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "../providers/auth";
@@ -55,10 +64,14 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [isInCall, setIsInCall] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [callParticipants, setCallParticipants] = useState<CallParticipant[]>([]);
+  const [callParticipants, setCallParticipants] = useState<CallParticipant[]>(
+    []
+  );
   const [showStreamCall, setShowStreamCall] = useState(false);
-  const [activeGroupCall, setActiveGroupCall] = useState<ActiveCall | null>(null);
-  
+  const [activeGroupCall, setActiveGroupCall] = useState<ActiveCall | null>(
+    null
+  );
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -116,111 +129,134 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       }
     }
   };
-  
+
   // Handle Stream call state change
-  const handleStreamCallStateChange = (state: { isInCall: boolean; isMuted: boolean }) => {
-    console.log(`Call state changed: isInCall=${state.isInCall}, isMuted=${state.isMuted}`);
-    
+  const handleStreamCallStateChange = (state: {
+    isInCall: boolean;
+    isMuted: boolean;
+  }) => {
+    console.log(
+      `Call state changed: isInCall=${state.isInCall}, isMuted=${state.isMuted}`
+    );
+
     // Update local state
     setIsInCall(state.isInCall);
     setIsMuted(state.isMuted);
-    
+
     // Exit if no socket connection
     if (!socket || !userId) {
-      console.log("Unable to update call state: no socket connection or user ID");
+      console.log(
+        "Unable to update call state: no socket connection or user ID"
+      );
       return;
     }
-    
+
     const callId = `group-${groupId}`;
-    
+
     // If user has joined the call, update the participants in real-time
     if (state.isInCall && user?.name) {
-      console.log(`User ${user.name} (${userId}) joining call for group ${groupId}`);
-      
+      console.log(
+        `User ${user.name} (${userId}) joining call for group ${groupId}`
+      );
+
       socket.emit("call_participant_joined", {
         groupId,
         userId,
         userName: user.name,
-        callId: callId
+        callId: callId,
       });
-      
+
       // If there's no active call record yet, create one
       if (!activeGroupCall) {
         const newCall = {
           callId: callId,
           initiatedBy: userId, // Current user becomes the creator if they're the first to join
           participants: [userId],
-          startedAt: new Date().toISOString()
+          startedAt: new Date().toISOString(),
         };
         setActiveGroupCall(newCall);
-        
+
         // Add the current user to participants
-        setCallParticipants([{
-          id: userId,
-          socketId: socket.id,
-          name: user.name
-        }]);
+        setCallParticipants([
+          {
+            id: userId,
+            socketId: socket.id,
+            name: user.name,
+          },
+        ]);
       }
-      
+
       // Log current call state for debugging
-      console.log(`Call ID: ${callId}, Participants: ${activeGroupCall ? activeGroupCall.participants.length : 0}`);
+      console.log(
+        `Call ID: ${callId}, Participants: ${
+          activeGroupCall ? activeGroupCall.participants.length : 0
+        }`
+      );
     }
-    
+
     // If user has left the call, handle cleanup
     if (!state.isInCall && activeGroupCall) {
-      console.log(`User ${user?.name || userId} leaving call for group ${groupId}`);
-      
+      console.log(
+        `User ${user?.name || userId} leaving call for group ${groupId}`
+      );
+
       // Use the endCall function to handle proper cleanup through socket
       endCall();
     }
   };
-  
+
   // Update the sendNotification function to use socket.io instead
   const sendNotification = (message: string) => {
     if (!socket || !userId || !user?.name) return;
-    
-    socket.emit('notification', {
+
+    socket.emit("notification", {
       groupId,
       message,
       userId,
-      userName: user.name
+      userName: user.name,
     });
   };
-  
+
   // Update startNewCall to create a call with only the creator as a participant
   const startNewCall = () => {
     if (!socket || !userId || !user?.name) {
-      toast.error('Unable to start call. Please try again.');
+      toast.error("Unable to start call. Please try again.");
       return;
     }
 
     if (activeGroupCall) {
-      toast.info('A call is already in progress. You can join it instead.');
+      toast.info("A call is already in progress. You can join it instead.");
       return;
     }
 
     const callId = `group-${groupId}`;
-    console.log(`Starting new call with ID: ${callId} for group ${groupId} with creator ${user.name}`);
+    console.log(
+      `Starting new call with ID: ${callId} for group ${groupId} with creator ${user.name}`
+    );
 
     // Initialize with only the creator as a participant
-    setCallParticipants([{
-      id: userId,
-      socketId: socket.id,
-      name: user.name
-    }]);
+    setCallParticipants([
+      {
+        id: userId,
+        socketId: socket.id,
+        name: user.name,
+      },
+    ]);
 
     // Create the call on the server with only the creator
-    socket.emit('call_started', {
+    socket.emit("call_started", {
       groupId,
       callId: callId,
       initiatedBy: userId,
       initiatorName: user.name,
       // Include participant details for others to see
-      participantDetails: [{
-        id: userId,
-        socketId: socket.id,
-        name: user.name
-      }]
+      participantDetails: [
+        {
+          id: userId,
+          socketId: socket.id,
+          name: user.name,
+        },
+      ],
     });
 
     // Set active call data locally - only include creator as participant
@@ -228,28 +264,28 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       callId: callId,
       initiatedBy: userId,
       participants: [userId],
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
     });
 
     // Show the call UI for the creator
     setShowStreamCall(true);
     setIsInCall(true);
 
-    toast.success('Starting group call as the only participant...');
-    
+    toast.success("Starting group call as the only participant...");
+
     // Notify others that a call has been started
-    socket.emit('notification', {
+    socket.emit("notification", {
       groupId,
       message: `${user.name} started a call`,
       userId,
-      userName: user.name
+      userName: user.name,
     });
   };
-  
+
   // Update joinOngoingCall to send a notification
   const joinOngoingCall = () => {
     if (!activeGroupCall || !socket || !userId || !user?.name) {
-      toast.error('Unable to join call. Please try again.');
+      toast.error("Unable to join call. Please try again.");
       return;
     }
 
@@ -257,17 +293,17 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     console.log(`Joining ongoing call with ID: ${activeGroupCall.callId}`);
     console.log(`Current participants: ${activeGroupCall.participants.length}`);
 
-    socket.emit('call_participant_joined', {
+    socket.emit("call_participant_joined", {
       groupId,
       userId,
       userName: user.name,
-      callId: activeGroupCall.callId
+      callId: activeGroupCall.callId,
     });
 
-    toast.success('Joining group call...');
+    toast.success("Joining group call...");
     sendNotification(`${user.name} joined the call in group ${groupId}`);
   };
-  
+
   // Update endCall to handle both leaving and ending a call properly
   const endCall = () => {
     if (!socket || !userId || !activeGroupCall) return;
@@ -276,11 +312,11 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
     setShowStreamCall(false);
 
     // Always notify the server that this participant has left
-    socket.emit('call_participant_left', {
+    socket.emit("call_participant_left", {
       groupId,
       userId,
-      userName: user?.name || 'Unknown user',
-      callId: activeGroupCall.callId
+      userName: user?.name || "Unknown user",
+      callId: activeGroupCall.callId,
     });
 
     // Check if the current user is the creator of the call
@@ -288,37 +324,41 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
     if (isCreator) {
       // Only the creator can end the call for everyone
-      socket.emit('call_ended', {
+      socket.emit("call_ended", {
         groupId,
         callId: activeGroupCall.callId,
         endedBy: userId,
-        endedByName: user?.name || 'Unknown user'
+        endedByName: user?.name || "Unknown user",
       });
-      
+
       setActiveGroupCall(null);
       setCallParticipants([]);
-      toast.info('Call ended for all participants');
-      sendNotification(`Call ended by ${user?.name || 'Unknown user'} in group ${groupId}`);
+      toast.info("Call ended for all participants");
+      sendNotification(
+        `Call ended by ${user?.name || "Unknown user"} in group ${groupId}`
+      );
     } else {
       // Non-creators just leave the call for themselves
-      toast.info('You left the call');
-      sendNotification(`${user?.name || 'Unknown user'} left the call in group ${groupId}`);
-      
+      toast.info("You left the call");
+      sendNotification(
+        `${user?.name || "Unknown user"} left the call in group ${groupId}`
+      );
+
       // Remove user from the participants list locally
       if (activeGroupCall) {
-        setActiveGroupCall(prev => {
+        setActiveGroupCall((prev) => {
           if (!prev) return null;
-          
+
           return {
             ...prev,
-            participants: prev.participants.filter(id => id !== userId)
+            participants: prev.participants.filter((id) => id !== userId),
           };
         });
-        
-        setCallParticipants(prev => prev.filter(p => p.id !== userId));
+
+        setCallParticipants((prev) => prev.filter((p) => p.id !== userId));
       }
     }
-    
+
     // Reset call state
     setIsInCall(false);
     setIsMuted(false);
@@ -330,7 +370,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
     newSocket.emit("joinGroup", groupId);
     fetchMessages();
-    
+
     // Check if there's an ongoing call in this group
     newSocket.emit("check_active_call", { groupId });
 
@@ -354,45 +394,54 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
         return newSet;
       });
     });
-    
+
     // Handle call-related events
     newSocket.on("active_call_status", (callData) => {
       if (callData && callData.callId) {
         console.log("Received active call status:", callData);
         setActiveGroupCall(callData);
-        
+
         // Update the participants list with names from the call data
-        if (callData.participantDetails && Array.isArray(callData.participantDetails)) {
+        if (
+          callData.participantDetails &&
+          Array.isArray(callData.participantDetails)
+        ) {
           setCallParticipants(callData.participantDetails);
         }
-        
+
         // If user is already a participant, show the call UI
         if (callData.participants.includes(userId)) {
           setShowStreamCall(true);
           setIsInCall(true);
         } else {
           // Show notification that there's an active call they can join
-          toast.info(`Active call in progress. ${callData.participants.length} participant(s)`, {
-            action: {
-              label: "Join",
-              onClick: () => setShowStreamCall(true)
+          toast.info(
+            `Active call in progress. ${callData.participants.length} participant(s)`,
+            {
+              action: {
+                label: "Join",
+                onClick: () => setShowStreamCall(true),
+              },
             }
-          });
+          );
         }
       }
     });
-    
+
     newSocket.on("call_started", (callData) => {
       console.log("Call started event received:", callData);
-      
+
       // Always update our local record of the active call
       setActiveGroupCall(callData);
-      
-      if (callData.participantDetails && Array.isArray(callData.participantDetails)) {
+
+      if (
+        callData.participantDetails &&
+        Array.isArray(callData.participantDetails)
+      ) {
         setCallParticipants(callData.participantDetails);
       }
-      
-      // If current user is not the call creator, just show notification 
+
+      // If current user is not the call creator, just show notification
       // but don't automatically join or show the call UI
       if (callData.initiatedBy !== userId) {
         // Only show the notification
@@ -403,105 +452,122 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
               // When they click join, then we'll show the call UI
               // and handle joining through the joinOngoingCall function
               joinOngoingCall();
-            }
-          }
+            },
+          },
         });
       }
     });
-    
-    newSocket.on("call_participant_joined", ({ userId: participantId, userName, socketId }) => {
-      console.log(`Participant joined: ${userName} (${participantId})`);
-      
-      // Update the active call participants
-      setActiveGroupCall(prev => {
-        if (!prev) return null;
-        
-        return {
-          ...prev,
-          participants: [...new Set([...prev.participants, participantId])]
-        };
-      });
-      
-      // Track participant details including name and socket ID for proper display
-      setCallParticipants(prev => {
-        // Remove any duplicate entries first
-        const filteredPrev = prev.filter(p => p.id !== participantId);
-        
-        return [
-          ...filteredPrev,
-          {
-            id: participantId,
-            socketId: socketId || '',
-            name: userName || `User-${participantId.substring(0, 6)}`
-          }
-        ];
-      });
-      
-      // Show toast only if it's not the current user
-      if (participantId !== userId) {
-        toast.info(`${userName} joined the call`);
-      }
-    });
-    
-    newSocket.on("call_participant_left", ({ userId: leftUserId, userName, callId, reason }) => {
-      console.log(`Participant left: ${userName} (${leftUserId}), reason: ${reason || 'left manually'}`);
-      
-      // Update the active call participants
-      setActiveGroupCall(prev => {
-        if (!prev) return null;
-        
-        const updatedParticipants = prev.participants.filter(id => id !== leftUserId);
-        
-        // If no participants left, call has ended
-        if (updatedParticipants.length === 0) {
-          return null;
-        }
-        
-        // If the creator left and we're the oldest participant, 
-        // make current user the new creator automatically
-        let updatedCall = {
-          ...prev,
-          participants: updatedParticipants
-        };
-        
-        if (leftUserId === prev.initiatedBy && updatedParticipants.length > 0) {
-          // If we're the oldest participant now in the call
-          if (updatedParticipants[0] === userId) {
-            updatedCall.initiatedBy = userId;
-            console.log(`${userName} (creator) left - current user is now the call creator`);
-            toast.info("You are now the call admin");
-          }
-        }
-        
-        return updatedCall;
-      });
-      
-      // Also remove from the detailed participants list
-      setCallParticipants(prev => prev.filter(p => p.id !== leftUserId));
-      
-      // Show toast only if it's not the current user
-      if (leftUserId !== userId) {
-        if (reason === 'offline') {
-          toast.info(`${userName} disconnected from the call`);
-        } else {
-          toast.info(`${userName} left the call`);
+
+    newSocket.on(
+      "call_participant_joined",
+      ({ userId: participantId, userName, socketId }) => {
+        console.log(`Participant joined: ${userName} (${participantId})`);
+
+        // Update the active call participants
+        setActiveGroupCall((prev) => {
+          if (!prev) return null;
+
+          return {
+            ...prev,
+            participants: [...new Set([...prev.participants, participantId])],
+          };
+        });
+
+        // Track participant details including name and socket ID for proper display
+        setCallParticipants((prev) => {
+          // Remove any duplicate entries first
+          const filteredPrev = prev.filter((p) => p.id !== participantId);
+
+          return [
+            ...filteredPrev,
+            {
+              id: participantId,
+              socketId: socketId || "",
+              name: userName || `User-${participantId.substring(0, 6)}`,
+            },
+          ];
+        });
+
+        // Show toast only if it's not the current user
+        if (participantId !== userId) {
+          toast.info(`${userName} joined the call`);
         }
       }
-    });
-    
+    );
+
+    newSocket.on(
+      "call_participant_left",
+      ({ userId: leftUserId, userName, callId, reason }) => {
+        console.log(
+          `Participant left: ${userName} (${leftUserId}), reason: ${
+            reason || "left manually"
+          }`
+        );
+
+        // Update the active call participants
+        setActiveGroupCall((prev) => {
+          if (!prev) return null;
+
+          const updatedParticipants = prev.participants.filter(
+            (id) => id !== leftUserId
+          );
+
+          // If no participants left, call has ended
+          if (updatedParticipants.length === 0) {
+            return null;
+          }
+
+          // If the creator left and we're the oldest participant,
+          // make current user the new creator automatically
+          let updatedCall = {
+            ...prev,
+            participants: updatedParticipants,
+          };
+
+          if (
+            leftUserId === prev.initiatedBy &&
+            updatedParticipants.length > 0
+          ) {
+            // If we're the oldest participant now in the call
+            if (updatedParticipants[0] === userId) {
+              updatedCall.initiatedBy = userId;
+              console.log(
+                `${userName} (creator) left - current user is now the call creator`
+              );
+              toast.info("You are now the call admin");
+            }
+          }
+
+          return updatedCall;
+        });
+
+        // Also remove from the detailed participants list
+        setCallParticipants((prev) => prev.filter((p) => p.id !== leftUserId));
+
+        // Show toast only if it's not the current user
+        if (leftUserId !== userId) {
+          if (reason === "offline") {
+            toast.info(`${userName} disconnected from the call`);
+          } else {
+            toast.info(`${userName} left the call`);
+          }
+        }
+      }
+    );
+
     newSocket.on("call_ended", (data = {}) => {
       // Extract properties safely with default values
       const endedBy = data?.endedBy;
-      const endedByName = data?.endedByName || 'Unknown user';
-      
-      console.log(`Call ended by ${endedByName} (${endedBy || 'unknown'})`);
+      const endedByName = data?.endedByName || "Unknown user";
+
+      console.log(`Call ended by ${endedByName} (${endedBy || "unknown"})`);
       setActiveGroupCall(null);
       setCallParticipants([]);
       setShowStreamCall(false);
       setIsInCall(false);
-      
+
       if (endedBy && endedBy !== userId) {
-        toast.info(`Call ended by ${endedByName || 'the call creator'}`);
+        toast.info(`Call ended by ${endedByName || "the call creator"}`);
       } else {
         toast.info("Call has ended");
       }
@@ -519,31 +585,35 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
 
     newSocket.on("disconnect", () => {
       console.log("Disconnected from server");
-      
+
       // If we were in a call, notify others that we've gone offline
       if (activeGroupCall && isInCall) {
         // Even though we're disconnected, we need to update our local state
         // to reflect that we're not in the call anymore
         setIsInCall(false);
         setShowStreamCall(false);
-        
-        console.log("Disconnected while in an active call - will notify server on reconnect");
-        
+
+        console.log(
+          "Disconnected while in an active call - will notify server on reconnect"
+        );
+
         // On reconnect, we'll tell the server we left the call
         newSocket.once("connect", () => {
           if (activeGroupCall) {
-            console.log("Reconnected - notifying server that we left the call while offline");
-            newSocket.emit('call_participant_left', {
+            console.log(
+              "Reconnected - notifying server that we left the call while offline"
+            );
+            newSocket.emit("call_participant_left", {
               groupId,
               userId,
-              userName: user?.name || 'Unknown user',
+              userName: user?.name || "Unknown user",
               callId: activeGroupCall.callId,
-              reason: 'offline'
+              reason: "offline",
             });
           }
         });
       }
-      
+
       // Clear call state
       setActiveGroupCall(null);
       setCallParticipants([]);
@@ -592,7 +662,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
   const groupMessagesByDate = (messages: Message[]) => {
     const grouped: { [date: string]: Message[] } = {};
     messages.forEach((message) => {
-      console.log(message);
+      // console.log(message);
       const date = message.updatedAt
         ? formatDateHeader(message.updatedAt)
         : formatDateHeader(message.createdAt);
@@ -721,7 +791,6 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
             </DialogDescription>
           </DialogHeader>
 
-
           {!selectedFile && !isUploading ? (
             <div
               onDragOver={handleDragOver}
@@ -826,7 +895,9 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
               Active Members: {activeGroupCall?.participants.length}
               {activeGroupCall && (
                 <span className="ml-2 text-green-500">
-                  • Call active ({activeGroupCall.participants.length} participant{activeGroupCall.participants.length !== 1 ? 's' : ''})
+                  • Call active ({activeGroupCall.participants.length}{" "}
+                  participant
+                  {activeGroupCall.participants.length !== 1 ? "s" : ""})
                 </span>
               )}
             </p>
@@ -842,7 +913,9 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
                   className="bg-green-100 hover:bg-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/30 text-green-700 dark:text-green-400"
                 >
                   <Users className="w-4 h-4 mr-2" />
-                  <span>Join Group Call ({activeGroupCall.participants.length})</span>
+                  <span>
+                    Join Group Call ({activeGroupCall.participants.length})
+                  </span>
                 </Button>
               ) : (
                 <Button
@@ -858,8 +931,8 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           ) : (
             <Button variant="destructive" onClick={endCall}>
               <X className="w-4 h-4 mr-2" />
-              {activeGroupCall && activeGroupCall.initiatedBy === userId 
-                ? "End Call for All" 
+              {activeGroupCall && activeGroupCall.initiatedBy === userId
+                ? "End Call for All"
                 : "Leave Call"}
             </Button>
           )}
@@ -869,15 +942,18 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       {/* Stream.io Call */}
       {showStreamCall && (
         <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-          <AudioCall 
-            callId={`group-${groupId}`} 
+          <AudioCall
+            callId={`group-${groupId}`}
             onCallStateChange={handleStreamCallStateChange}
             className="border-b dark:border-gray-700"
             autoJoin={true}
-            participantNames={callParticipants.reduce((acc, participant) => ({
-              ...acc,
-              [participant.id]: participant.name
-            }), {})}
+            participantNames={callParticipants.reduce(
+              (acc, participant) => ({
+                ...acc,
+                [participant.id]: participant.name,
+              }),
+              {}
+            )}
           />
         </div>
       )}
