@@ -110,22 +110,32 @@ export const getOrCreateCall = async (client: StreamVideoClient, callId: string,
   try {
     console.log('Getting or creating audio call:', callId);
     
-    // Create or get the call with audio_room type
-    const call = client.call('audio_room', callId);
+    // Create or get the call with default call type (changed from audio_room)
+    // This is a critical change - using 'default' type instead of 'audio_room'
+    const call = client.call('development', callId);
     
     // Check if the call already exists
     try {
       await call.getOrCreate({
         data: {
-          members: [{ user_id: user.id, role: 'user' }],
+          members: [{ user_id: user.id, role: 'user' }], // Use call_member role
           custom: {
             room_type: 'audio',
             should_ring: false,
             creator_id: user.id,
+            start_call_audio: true, // Explicitly start with audio
+            audio_only: true, // Specify audio-only call
+            auto_enable_audio: true, // Enable audio automatically
           }
         }
       });
       console.log('Audio call created or retrieved successfully');
+      
+      // Add more detailed logging for debugging
+      console.log('Call object:', call);
+      console.log('Call type:', call.type);
+      console.log('Call state:', call.state);
+      
     } catch (createError) {
       console.error('Error creating/getting audio call:', createError);
       throw createError;
@@ -142,6 +152,7 @@ export const getOrCreateCall = async (client: StreamVideoClient, callId: string,
  * Set up audio call event listeners
  */
 export const setupCallEventListeners = (call: Call) => {
+  // Original event listeners
   call.on('participantJoined', (event) => 
     console.log('Participant joined:', event.participant)
   );
@@ -151,6 +162,13 @@ export const setupCallEventListeners = (call: Call) => {
   call.on('call.updated', () => 
     console.log('Call updated')
   );
+  
+  // Add more detailed event listeners for debugging audio issues
+  call.on('call.accepted', () => console.log('Call accepted'));
+  call.on('call.rejected', () => console.log('Call rejected'));
+  
+  // Track errors
+  call.on('error', (event) => console.error('Call error:', event));
 };
 
 /**

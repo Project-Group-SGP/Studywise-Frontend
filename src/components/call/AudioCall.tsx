@@ -21,6 +21,7 @@ import {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../providers/auth";
+import { useTheme } from "../providers/theme-provider";
 import {
   disconnectClient,
   getOrCreateCall,
@@ -54,7 +55,7 @@ interface AudioCallProps {
 //     const displayName = 
 //       participantNames?.[participant.userId] || 
 //       participant.user?.name || 
-//       (participant.userId ? `User-${participant.userId.substring(0, 6)}` : "Unknown user");
+//       (participant.userId ? `User-${participant.userId.substring(0, 6)}` : "Unknown");
 
 //     return (
 //       <div className="flex items-center gap-2 p-2 bg-gray-800/50 rounded-md">
@@ -82,7 +83,7 @@ interface AudioCallProps {
 // );
 
 // Separate component for the audio visualizer
-const AudioVisualizer = memo(({ audioStream }: { audioStream: MediaStream | null }) => {
+const AudioVisualizer = memo(({ audioStream, theme = 'dark' }: { audioStream: MediaStream | null, theme?: string }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -116,24 +117,53 @@ const AudioVisualizer = memo(({ audioStream }: { audioStream: MediaStream | null
         return;
       }
 
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      // Ensure the canvas is responsive
+      const resizeCanvas = () => {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      };
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
 
       const draw = () => {
         analyserRef.current?.getByteFrequencyData(dataArray);
-        canvasCtx.fillStyle = "#1f2937";
+        
+        // Use different background colors based on theme - solid colors without blur
+        canvasCtx.fillStyle = theme === 'dark' ? "#111827" : "#1f2937";
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
         const barWidth = (canvas.width / bufferLength) * 2.5;
         let x = 0;
 
+        // Check if roundRect is supported
+        const hasRoundRect = typeof canvasCtx.roundRect === 'function';
+
         for (let i = 0; i < bufferLength; i++) {
           const barHeight = (dataArray[i] / 255) * canvas.height;
-          const gradient = canvasCtx.createLinearGradient(0, canvas.height, 0, 0);
-          gradient.addColorStop(0, "#22c55e");
-          gradient.addColorStop(1, "#4ade80");
-          canvasCtx.fillStyle = gradient;
-          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          
+          // For crisp graphics, use solid colors instead of gradients
+          if (theme === 'dark') {
+            canvasCtx.fillStyle = "#10b981"; // emerald-500
+          } else {
+            canvasCtx.fillStyle = "#059669"; // emerald-600
+          }
+          
+          // Remove shadow blur for crisp edges
+          canvasCtx.shadowBlur = 0;
+          
+          // Make the bars with clear edges
+          if (hasRoundRect) {
+            canvasCtx.beginPath();
+            canvasCtx.roundRect(x, canvas.height - barHeight, barWidth, barHeight, [3, 3, 0, 0]);
+            canvasCtx.fill();
+          } else {
+            // Fallback for browsers without roundRect support
+            canvasCtx.beginPath();
+            canvasCtx.rect(x, canvas.height - barHeight, barWidth, barHeight);
+            canvasCtx.fill();
+          }
+          
           x += barWidth + 1;
         }
 
@@ -145,21 +175,25 @@ const AudioVisualizer = memo(({ audioStream }: { audioStream: MediaStream | null
       return () => {
         cancelAnimationFrame(animationRef.current!);
         source.disconnect();
+        window.removeEventListener('resize', resizeCanvas);
         // Don't close the audio context every time to prevent re-creation issues
       };
     } catch (error) {
       console.error("Error setting up audio visualizer:", error);
     }
-  }, [audioStream]);
+  }, [audioStream, theme]);
 
-  return <canvas ref={canvasRef} className="w-full h-full" />;
+  return (
+    <canvas ref={canvasRef} className="w-full h-full rounded-sm" />
+  );
 });
 
 // Separate component to handle the call content
-const CallContent = memo(({ user, participantNames, onLeave }: { 
+const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }: { 
   user: any; 
   participantNames?: { [key: string]: string };
-  onLeave: () => void; 
+  onLeave: () => void;
+  theme?: string;
 }) => {
   const call = useCall();
   const { useParticipants, useRemoteParticipants } = useCallStateHooks();
@@ -237,9 +271,9 @@ const CallContent = memo(({ user, participantNames, onLeave }: {
   const isAnySpeaking = speakingParticipants.length > 0;
 
   return (
-    <div className="flex flex-col bg-gray-900 rounded-md overflow-hidden">
+    <div className="flex flex-col bg-gray-900 dark:bg-gray-950 rounded-md overflow-hidden">
       {/* Minimal header like in the image */}
-      <div className="bg-gray-800 px-3 py-2 flex justify-between items-center">
+      <div className="bg-gray-800 dark:bg-gray-900 px-3 py-2 flex justify-between items-center">
         <div className="flex items-center">
           <Volume2 size={16} className="text-green-400 mr-2" />
           <span className="text-sm font-medium text-white">
@@ -252,15 +286,15 @@ const CallContent = memo(({ user, participantNames, onLeave }: {
             onClick={toggleMute}
             className={`p-1.5 rounded-full ${
               isMuted 
-                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" 
-                : "bg-gray-700 text-white hover:bg-gray-600"
+                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 dark:bg-red-900/30 dark:hover:bg-red-900/40" 
+                : "bg-gray-700 dark:bg-gray-800 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
             }`}
           >
             {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
           </button>
           <button
             onClick={leaveCall}
-            className="p-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30"
+            className="p-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 dark:bg-red-900/30 dark:hover:bg-red-900/40"
           >
             <PhoneOff size={14} />
           </button>
@@ -286,21 +320,31 @@ const CallContent = memo(({ user, participantNames, onLeave }: {
             return (
               <div 
                 key={participant.userId}
-                className={`flex items-center px-2 py-1 rounded-full ${
+                className={`flex items-center px-2 py-1 rounded-full transition-all duration-300 ${
                   participant.isSpeaking 
-                    ? "bg-green-500/20" 
-                    : "bg-gray-800"
+                    ? "bg-green-500/80 dark:bg-green-800" 
+                    : "bg-gray-800 dark:bg-gray-800/90"
                 }`}
               >
                 {userImage ? (
-                  <img
-                    src={userImage}
-                    alt="User"
-                    className="w-5 h-5 rounded-full mr-1.5"
-                  />
+                  <div className="relative">
+                    <img
+                      src={userImage}
+                      alt="User"
+                      className={`w-5 h-5 rounded-full mr-1.5 ${participant.isSpeaking ? "ring-2 ring-green-400 ring-offset-1 ring-offset-gray-900 dark:ring-green-500 dark:ring-offset-gray-950" : ""}`}
+                    />
+                    {participant.isSpeaking && (
+                      <div className="absolute -inset-0.5 rounded-full bg-green-500/40 dark:bg-green-500/30"></div>
+                    )}
+                  </div>
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white mr-1.5">
-                    {(userName || "U").charAt(0).toUpperCase()}
+                  <div className="relative">
+                    <div className={`w-5 h-5 rounded-full bg-gray-600 dark:bg-gray-700 flex items-center justify-center text-xs text-white mr-1.5 ${participant.isSpeaking ? "ring-2 ring-green-400 ring-offset-1 ring-offset-gray-900 dark:ring-green-500 dark:ring-offset-gray-950" : ""}`}>
+                      {(userName || "U").charAt(0).toUpperCase()}
+                    </div>
+                    {participant.isSpeaking && (
+                      <div className="absolute -inset-0.5 rounded-full bg-green-500/40 dark:bg-green-500/30"></div>
+                    )}
                   </div>
                 )}
                 <span className="text-xs text-white truncate max-w-24">
@@ -311,7 +355,14 @@ const CallContent = memo(({ user, participantNames, onLeave }: {
                   <MicOff size={10} className="text-red-400 ml-1" />
                 )}
                 {participant.isSpeaking && (
-                  <div className="ml-1 w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <>
+                    <div className="ml-1 flex items-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    </div>
+                    {isCurrentUser && (
+                      <span className="text-[10px] text-green-300 ml-1">Speaking</span>
+                    )}
+                  </>
                 )}
               </div>
             );
@@ -321,8 +372,14 @@ const CallContent = memo(({ user, participantNames, onLeave }: {
 
       {/* Only show visualizer when needed in a very compact form */}
       {isAnySpeaking && activeAudioStream && (
-        <div className="h-1.5 mt-0.5 mb-1">
-          <AudioVisualizer audioStream={activeAudioStream} />
+        <div className="h-6 mt-1 mb-1 px-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-green-400 flex items-center">
+              <Volume2 size={10} className="mr-1" /> Audio active
+            </span>
+            <span className="text-[10px] text-gray-400">Voice activity detected</span>
+          </div>
+          <AudioVisualizer audioStream={activeAudioStream} theme={theme} />
         </div>
       )}
     </div>
@@ -344,6 +401,7 @@ function AudioCall({
   const [isInCall, setIsInCall] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
+  const { theme } = useTheme();
   const clientRef = useRef<StreamVideoClient | null>(null);
   const callRef = useRef<Call | null>(null);
   const initializedRef = useRef(false);
@@ -529,21 +587,58 @@ function AudioCall({
         // Check if we have permission for audio
         const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
         console.log("Microphone permission status:", permissionStatus.state);
+        
+        // First get user media directly to ensure browser permission and prepare microphone
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Successfully acquired microphone stream:", stream.getAudioTracks().length > 0);
+        console.log("Audio tracks:", stream.getAudioTracks().map(track => ({
+          label: track.label,
+          enabled: track.enabled,
+          muted: track.muted,
+          readyState: track.readyState
+        })));
+        
+        // Release the stream as Stream SDK will get its own
+        stream.getTracks().forEach(track => track.stop());
       } catch (deviceError) {
         console.error("Error checking audio devices:", deviceError);
       }
       
-      // Join the call with create option
+      // Join the call with create option and explicitly request audio permissions
       console.log("Attempting to join audio call...");
-      await call.join({ create: true });
+      await call.join({ 
+        create: true,
+        // Standard parameters only
+      });
       console.log("Successfully joined audio call");
       
-      // After joining, enable microphone
+      // After joining, need to EXPLICITLY wait before enabling microphone
       console.log("=== Setting Up Audio Devices ===");
       try {
+        // Wait for 1 second to ensure call is fully established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         console.log("Enabling microphone...");
-        await call.microphone?.enable();
-        console.log("Microphone enabled successfully");
+        
+        // Force microphone permission and initialization
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("Microphone permission confirmed");
+          micStream.getTracks().forEach(track => track.stop());
+        } catch (micErr) {
+          console.error("Could not get microphone permission:", micErr);
+          throw micErr;
+        }
+        
+        // Try a different approach to enable audio
+        if (call.microphone) {
+          // Method 1: Try standard approach
+          await call.microphone.enable();
+          console.log("Microphone enabled successfully using standard method");
+        } else {
+          console.error("No microphone object found on call");
+          throw new Error("No microphone object available");
+        }
         
         // Disable video if it exists (safety check)
         if (call.camera) {
@@ -753,11 +848,11 @@ function AudioCall({
       {isInCall && callInstance ? (
         <StreamVideo client={client!}>
           <StreamCall call={callInstance}>
-            <CallContent user={user} participantNames={participantNames} onLeave={leaveCall} />
+            <CallContent user={user} participantNames={participantNames} onLeave={leaveCall} theme={theme} />
           </StreamCall>
         </StreamVideo>
       ) : (
-        <div className="bg-gray-900 p-3 rounded-md">
+        <div className="bg-gray-900 dark:bg-gray-950 p-3 rounded-md">
           {isLoading ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin mr-2 w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full" />
@@ -771,6 +866,7 @@ function AudioCall({
                 size="sm"
                 onClick={handleReconnect}
                 disabled={isLoading}
+                className="bg-background/10 text-white hover:bg-background/20 dark:bg-gray-800 dark:hover:bg-gray-700"
               >
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Reconnect
@@ -781,7 +877,7 @@ function AudioCall({
               onClick={handleReconnect}
               disabled={isLoading}
               size="sm"
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              className="w-full bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
             >
               <Phone className="h-3 w-3 mr-1" />
               Join Voice Call
@@ -790,7 +886,7 @@ function AudioCall({
         </div>
       )}
     </div>
-  ), [isInCall, callInstance, client, isLoading, connectionError, user, toggleMute, leaveCall, isMuted, handleReconnect, participantNames]);
+  ), [isInCall, callInstance, client, isLoading, connectionError, user, leaveCall, handleReconnect, participantNames, theme]);
 
   // Render based on selected mode
   const renderByMode = useCallback(() => {
@@ -822,12 +918,13 @@ function AudioCall({
               user={user} 
               participantNames={participantNames} 
               onLeave={leaveCall} 
+              theme={theme}
             />
           </div>
         </StreamCall>
       </StreamVideo>
     );
-  }, [client, callInstance, isLoading, isInCall, handleReconnect, leaveCall, user, participantNames]);
+  }, [client, callInstance, isLoading, isInCall, handleReconnect, leaveCall, user, participantNames, theme]);
 
   // Main render
   if (isLoading && !isInCall && !connectionError) {
