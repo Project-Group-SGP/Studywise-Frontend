@@ -12,6 +12,10 @@ import { Star } from "./star";
 import { Diamond } from "./diamond";
 import { Hexagon } from "./hexagon";
 import { Pentagon } from "./pentagon";
+import { StraightLine } from "./straight-line";
+import { ArrowLine } from "./arrow-line";
+import { CurvedLine } from "./curved-line";
+import { ZigzagLine } from "./zigzag-line";
 interface LayerPreviewProps {
   id:string;
   onLayerPointerDown:(e:React.PointerEvent,layerId:string)=> void;
@@ -125,6 +129,43 @@ export const LayerPreview = memo(({
           selectionColor={selectionColor}
         />
       )
+    // New line types
+    case LayerType.StraightLine:
+      return (
+        <StraightLine
+          id={id}
+          layer={layer}
+          onLayerPointerDown={onLayerPointerDown}
+          selectionColor={selectionColor}
+        />
+      );
+    case LayerType.ArrowLine:
+      return (
+        <ArrowLine
+          id={id}
+          layer={layer}
+          onLayerPointerDown={onLayerPointerDown}
+          selectionColor={selectionColor}
+        />
+      );
+    case LayerType.CurvedLine:
+      return (
+        <CurvedLine
+          id={id}
+          layer={layer}
+          onLayerPointerDown={onLayerPointerDown}
+          selectionColor={selectionColor}
+        />
+      );
+    case LayerType.ZigzagLine:
+      return (
+        <ZigzagLine
+          id={id}
+          layer={layer}
+          onLayerPointerDown={onLayerPointerDown}
+          selectionColor={selectionColor}
+        />
+      );
     default:
       console.warn("Unknown layer type",layer);
       return null;
