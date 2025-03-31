@@ -1,7 +1,6 @@
 import { useSelectionBounds } from "@/hooks/use-selection-bounds";
 import { LayerType, Side, XYWH } from "@/types/canvas";
 import { useSelf, useStorage } from "@liveblocks/react/suspense";
-import { on } from "process";
 import {memo} from "react";
 
 interface SelectionBoxProps {

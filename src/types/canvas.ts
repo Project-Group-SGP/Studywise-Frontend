@@ -1,140 +1,3 @@
-// import { init } from "next/dist/compiled/webpack/webpack";
-
-// export type Color = {
-//   r:number,
-//   g:number,
-//   b:number
-// }
-
-// export type Camera = {
-//   x:number,
-//   y:number
-// }
-
-// export enum LayerType{
-//   Reactangle,
-//   Ellipse,
-//   Path,
-//   Text,
-//   Note,
-// };
-
-// export type ReactangleLayer = {
-//   type:LayerType.Reactangle,
-//   x:number,
-//   y:number,
-//   width:number,
-//   height:number,
-//   fill:Color,
-//   value?:string,
-// };
-
-// export type EllipseLayer = {
-//   type:LayerType.Ellipse,
-//   x:number,
-//   y:number,
-//   width:number,
-//   height:number,
-//   fill:Color,
-//   value?:string,
-// };
-
-// export type PathLayer = {
-//   type:LayerType.Path,
-//   x:number,
-//   y:number,
-//   width:number,
-//   height:number,
-//   fill:Color,
-//   points?:number[][],
-//   value?:string,
-// };
-
-// export type TextLayer = {
-//   type:LayerType.Text,
-//   x:number,
-//   y:number,
-//   width:number,
-//   height:number,
-//   fill:Color,
-//   value?:string,
-// };
-
-// export type NoteLayer = {
-//   type:LayerType.Note,
-//   x:number,
-//   y:number,
-//   width:number,
-//   height:number,
-//   fill:Color,
-//   value?:string,
-// };
-
-// export type Point={
-//   x:number,
-//   y:number
-// };
-
-// export type XYWH = {
-//   x:number,
-//   y:number,
-//   width:number,
-//   height:number
-// };
-
-// export enum Side {
-//   Top=1,
-//   Bottom=2,
-//   Left=4,
-//   Right=8,
-// };
-
-
-
-// export type CanvasState =
-//   | {
-//     mode:CanvasMode.None,
-//     }
-//   | {
-//       mode:CanvasMode.SelectionNet,
-//       origin:Point;
-//       current?:Point;
-//     }
-//   | {
-//       mode:CanvasMode.Translating,
-//       current:Point
-//     }
-//   | {
-//       mode:CanvasMode.Pressing,
-//       origin:Point;
-
-//     }
-//   | {
-//       mode:CanvasMode.Inserting,
-//       layerType:LayerType.Ellipse | LayerType.Reactangle | LayerType.Text | LayerType.Note;
-//     }
-//   | {
-//       mode:CanvasMode.Resizing,
-//       initialBounds:XYWH,
-//       corner:Side;
-//     }
-//   |{
-//       mode:CanvasMode.Pencil
-//     };
-
-
-// export enum CanvasMode{
-//   None,
-//   Pressing,
-//   SelectionNet,
-//   Translating,
-//   Inserting,
-//   Resizing,
-//   Pencil,
-// };
-
-// export type Layer = ReactangleLayer | EllipseLayer | PathLayer | TextLayer | NoteLayer;
-
 export type Color = {
   r: number,
   g: number,
@@ -157,6 +20,10 @@ export enum LayerType {
   Star,
   Diamond,
   Pentagon,
+  StraightLine,   
+  ArrowLine,
+  CurvedLine,
+  ZigzagLine,
 };
 
 export type ReactangleLayer = {
@@ -290,6 +157,55 @@ export enum CanvasMode {
   Pencil,
 };
 
+// Add new layer types
+export type StraightLineLayer = {
+  type: LayerType.StraightLine,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  strokeWidth?: number,
+  value?: string,
+};
+
+export type ArrowLineLayer = {
+  type: LayerType.ArrowLine,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  strokeWidth?: number,
+  value?: string,
+};
+
+export type CurvedLineLayer = {
+  type: LayerType.CurvedLine,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  strokeWidth?: number,
+  controlPointX?: number, // For the bezier curve
+  controlPointY?: number,
+  value?: string,
+};
+
+export type ZigzagLineLayer = {
+  type: LayerType.ZigzagLine,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: Color,
+  strokeWidth?: number,
+  segments?: number, // Number of zigzag segments
+  value?: string,
+};
+
+// Update your Layer type union
 export type Layer = 
   | ReactangleLayer 
   | EllipseLayer 
@@ -300,8 +216,13 @@ export type Layer =
   | HexagonLayer
   | StarLayer
   | DiamondLayer
-  | PentagonLayer;
+  | PentagonLayer
+  | StraightLineLayer
+  | ArrowLineLayer
+  | CurvedLineLayer
+  | ZigzagLineLayer;
 
+// Update CanvasState for the Inserting mode
 export type CanvasState =
   | {
     mode: CanvasMode.None,
@@ -330,7 +251,11 @@ export type CanvasState =
         | LayerType.Hexagon
         | LayerType.Star
         | LayerType.Diamond
-        | LayerType.Pentagon;
+        | LayerType.Pentagon
+        | LayerType.StraightLine
+        | LayerType.ArrowLine
+        | LayerType.CurvedLine
+        | LayerType.ZigzagLine;
     }
   | {
       mode: CanvasMode.Resizing,
