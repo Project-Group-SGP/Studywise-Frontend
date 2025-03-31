@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 import AudioCall from "../call/AudioCall";
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
@@ -148,6 +149,8 @@ export const SessionTimer = ({ session, onClose, onLeave, currentUserId }: Sessi
     
     return { x: xPos, y: yPos };
   };
+
+  const router = useNavigate();
 
   return (
     <motion.div
