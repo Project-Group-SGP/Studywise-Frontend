@@ -130,7 +130,7 @@ const AudioVisualizer = memo(({ audioStream, theme = 'dark' }: { audioStream: Me
         analyserRef.current?.getByteFrequencyData(dataArray);
         
         // Use different background colors based on theme - solid colors without blur
-        canvasCtx.fillStyle = theme === 'dark' ? "#111827" : "#1f2937";
+        canvasCtx.fillStyle = theme === 'dark' ? "#111827" : "#f3f4f6"; // Dark gray vs light gray
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
         const barWidth = (canvas.width / bufferLength) * 2.5;
@@ -144,9 +144,9 @@ const AudioVisualizer = memo(({ audioStream, theme = 'dark' }: { audioStream: Me
           
           // For crisp graphics, use solid colors instead of gradients
           if (theme === 'dark') {
-            canvasCtx.fillStyle = "#10b981"; // emerald-500
+            canvasCtx.fillStyle = "#10b981"; // emerald-500 for dark
           } else {
-            canvasCtx.fillStyle = "#059669"; // emerald-600
+            canvasCtx.fillStyle = "#059669"; // emerald-600 for light (slightly darker for contrast)
           }
           
           // Remove shadow blur for crisp edges
@@ -189,51 +189,58 @@ const AudioVisualizer = memo(({ audioStream, theme = 'dark' }: { audioStream: Me
 });
 
 // Separate component to handle the call content
-const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }: { 
-  user: any; 
-  participantNames?: { [key: string]: string };
-  onLeave: () => void;
-  theme?: string;
-}) => {
+const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }:any) => {
   const call = useCall();
   const { useParticipants, useRemoteParticipants } = useCallStateHooks();
   const participants = useParticipants();
   const remoteParticipants = useRemoteParticipants();
   const [isMuted, setIsMuted] = useState(false);
-  
-  // Remote participant audio stream (for visualizer)
   const [activeAudioStream, setActiveAudioStream] = useState<MediaStream | null>(null);
-  
-  // Update active audio stream when remote participants change
+
+  // Handle audio playback for remote participants
   useEffect(() => {
-    // Find the first participant with an audio stream
+    const audioElement = document.createElement('audio');
+    audioElement.autoplay = true;
+    audioElement.style.display = 'none'; // Hidden audio element
+    document.body.appendChild(audioElement);
+
     const participantWithAudio = remoteParticipants?.find(p => p.audioStream);
     if (participantWithAudio?.audioStream) {
+      console.log(`Playing audio stream for participant ${participantWithAudio.userId}`);
+      audioElement.srcObject = participantWithAudio.audioStream;
+      audioElement.play()
+        .then(() => console.log("Audio playback started successfully"))
+        .catch(err => console.error("Audio playback error:", err));
       setActiveAudioStream(participantWithAudio.audioStream);
     } else {
-      setActiveAudioStream(null);
+      console.log("No remote participant with audio stream found");
     }
+
+    return () => {
+      audioElement.srcObject = null;
+      audioElement.remove();
+      console.log("Audio element cleaned up");
+    };
   }, [remoteParticipants]);
-  
-  // Add debug effect to monitor audio
+
+  // Enhanced debugging for audio state
   useEffect(() => {
-    console.log("=== Call Audio Debug ===");
+    console.log("=== Audio Call Debug ===");
     console.log("Total participants:", participants?.length);
     console.log("Remote participants:", remoteParticipants?.length);
-    
+    console.log("Call object exists:", !!call);
     if (call) {
-      console.log("Call object:", call);
-      console.log("Call type:", call.type);
       console.log("Call state:", call.state);
-      console.log("Audio settings:", call.state.settings?.audio);
-      
-      // Check if we're receiving audio
-      remoteParticipants?.forEach(participant => {
-        console.log(`Participant ${participant.userId} audio state:`, participant.audioStream);
-        console.log(`Participant ${participant.userId} is speaking:`, participant.isSpeaking);
-        console.log(`Participant ${participant.userId} microphone state:`, participant.publishedTracks);
-      });
+      console.log("Own capabilities:", call.state.ownCapabilities);
+      console.log("Microphone state:", call.microphone?.state);
     }
+    remoteParticipants?.forEach(participant => {
+      console.log(`Participant ${participant.userId}:`);
+      console.log(`  Audio stream:`, participant.audioStream);
+      console.log(`  Published tracks:`, participant.publishedTracks);
+      console.log(`  Is speaking:`, participant.isSpeaking);
+      console.log(`  Is muted:`, participant.audioLevel);
+    });
   }, [call, participants, remoteParticipants]);
 
   const toggleMute = useCallback(async () => {
@@ -258,56 +265,62 @@ const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }: {
   const leaveCall = useCallback(async () => {
     if (!call) return;
     try {
-      // Use the provided onLeave callback
       onLeave();
     } catch (error) {
       console.error("Error leaving call:", error);
       toast.error("Error leaving call");
     }
   }, [call, onLeave]);
-  
-  // Find who is speaking
+
   const speakingParticipants = participants?.filter(p => p.isSpeaking) || [];
   const isAnySpeaking = speakingParticipants.length > 0;
 
   return (
-    <div className="flex flex-col bg-gray-900 dark:bg-gray-950 rounded-md overflow-hidden">
-      {/* Minimal header like in the image */}
-      <div className="bg-gray-800 dark:bg-gray-900 px-3 py-2 flex justify-between items-center">
+    <div className={`flex flex-col rounded-md overflow-hidden ${
+      theme === 'dark' ? 'bg-gray-900' : 'bg-white border border-gray-200'
+    }`}>
+      <div className={`px-3 py-2 flex justify-between items-center ${
+        theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-800'
+      }`}>
         <div className="flex items-center">
-          <Volume2 size={16} className="text-green-400 mr-2" />
-          <span className="text-sm font-medium text-white">
+          <Volume2 size={16} className={`mr-2 ${
+            theme === 'dark' ? 'text-green-400' : 'text-green-600'
+          }`} />
+          <span className="text-sm font-medium">
             Voice Call ({participants?.length || 0})
           </span>
         </div>
-        
         <div className="flex items-center space-x-2">
           <button
             onClick={toggleMute}
             className={`p-1.5 rounded-full ${
               isMuted 
-                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 dark:bg-red-900/30 dark:hover:bg-red-900/40" 
-                : "bg-gray-700 dark:bg-gray-800 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
+                ? theme === 'dark'
+                  ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                  : "bg-red-100 text-red-600 hover:bg-red-200"
+                : theme === 'dark'
+                  ? "bg-gray-700 text-white hover:bg-gray-600"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
             {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
           </button>
           <button
             onClick={leaveCall}
-            className="p-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 dark:bg-red-900/30 dark:hover:bg-red-900/40"
+            className={`p-1.5 rounded-full ${
+              theme === 'dark'
+                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                : "bg-red-100 text-red-600 hover:bg-red-200"
+            }`}
           >
             <PhoneOff size={14} />
           </button>
         </div>
       </div>
 
-      {/* Participant list directly below header - no gap */}
       <div className="pt-0.5 px-1">
-        {/* Participant list */}
         <div className="flex flex-wrap gap-1 py-1">
           {participants?.map((participant) => {
-            // Get user properties safely, handling any type issues
-            // Need to cast to any to access properties that TypeScript doesn't recognize
             const participantAny = participant as any;
             const userImage = participantAny.user?.image;
             const userName = 
@@ -316,14 +329,18 @@ const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }: {
               (participant.userId ? `User-${participant.userId.substring(0, 6)}` : "Unknown");
             const isCurrentUser = participant.userId === user?.id;
             const participantIsMuted = participantAny.isMuted || false;
-            
+
             return (
               <div 
                 key={participant.userId}
                 className={`flex items-center px-2 py-1 rounded-full transition-all duration-300 ${
                   participant.isSpeaking 
-                    ? "bg-green-500/80 dark:bg-green-800" 
-                    : "bg-gray-800 dark:bg-gray-800/90"
+                    ? theme === 'dark'
+                      ? "bg-green-800"
+                      : "bg-green-100 text-green-800"
+                    : theme === 'dark'
+                      ? "bg-gray-800"
+                      : "bg-gray-200 text-gray-800"
                 }`}
               >
                 {userImage ? (
@@ -331,36 +348,64 @@ const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }: {
                     <img
                       src={userImage}
                       alt="User"
-                      className={`w-5 h-5 rounded-full mr-1.5 ${participant.isSpeaking ? "ring-2 ring-green-400 ring-offset-1 ring-offset-gray-900 dark:ring-green-500 dark:ring-offset-gray-950" : ""}`}
+                      className={`w-5 h-5 rounded-full mr-1.5 ${
+                        participant.isSpeaking 
+                          ? theme === 'dark'
+                            ? "ring-2 ring-green-400 ring-offset-1 ring-offset-gray-900"
+                            : "ring-2 ring-green-500 ring-offset-1 ring-offset-white"
+                          : ""
+                      }`}
                     />
                     {participant.isSpeaking && (
-                      <div className="absolute -inset-0.5 rounded-full bg-green-500/40 dark:bg-green-500/30"></div>
+                      <div className={`absolute -inset-0.5 rounded-full ${
+                        theme === 'dark' ? "bg-green-500/30" : "bg-green-500/20"
+                      }`}></div>
                     )}
                   </div>
                 ) : (
                   <div className="relative">
-                    <div className={`w-5 h-5 rounded-full bg-gray-600 dark:bg-gray-700 flex items-center justify-center text-xs text-white mr-1.5 ${participant.isSpeaking ? "ring-2 ring-green-400 ring-offset-1 ring-offset-gray-900 dark:ring-green-500 dark:ring-offset-gray-950" : ""}`}>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs mr-1.5 ${
+                      theme === 'dark'
+                        ? "bg-gray-600 text-white"
+                        : "bg-gray-300 text-gray-800"
+                    } ${
+                      participant.isSpeaking
+                        ? theme === 'dark'
+                          ? "ring-2 ring-green-400 ring-offset-1 ring-offset-gray-900"
+                          : "ring-2 ring-green-500 ring-offset-1 ring-offset-white"
+                        : ""
+                    }`}>
                       {(userName || "U").charAt(0).toUpperCase()}
                     </div>
                     {participant.isSpeaking && (
-                      <div className="absolute -inset-0.5 rounded-full bg-green-500/40 dark:bg-green-500/30"></div>
+                      <div className={`absolute -inset-0.5 rounded-full ${
+                        theme === 'dark' ? "bg-green-500/30" : "bg-green-500/20"
+                      }`}></div>
                     )}
                   </div>
                 )}
-                <span className="text-xs text-white truncate max-w-24">
+                <span className={`text-xs truncate max-w-24 ${
+                  theme === 'dark' ? "text-white" : "text-gray-800"
+                }`}>
                   {userName}
                   {isCurrentUser && " (You)"}
                 </span>
                 {participantIsMuted && (
-                  <MicOff size={10} className="text-red-400 ml-1" />
+                  <MicOff size={10} className={`ml-1 ${
+                    theme === 'dark' ? "text-red-400" : "text-red-500"
+                  }`} />
                 )}
                 {participant.isSpeaking && (
                   <>
                     <div className="ml-1 flex items-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${
+                        theme === 'dark' ? "bg-green-500" : "bg-green-600"
+                      }`}></div>
                     </div>
                     {isCurrentUser && (
-                      <span className="text-[10px] text-green-300 ml-1">Speaking</span>
+                      <span className={`text-[10px] ml-1 ${
+                        theme === 'dark' ? "text-green-300" : "text-green-700"
+                      }`}>Speaking</span>
                     )}
                   </>
                 )}
@@ -370,14 +415,17 @@ const CallContent = memo(({ user, participantNames, onLeave, theme = 'dark' }: {
         </div>
       </div>
 
-      {/* Only show visualizer when needed in a very compact form */}
       {isAnySpeaking && activeAudioStream && (
         <div className="h-6 mt-1 mb-1 px-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-green-400 flex items-center">
+            <span className={`text-[10px] flex items-center ${
+              theme === 'dark' ? "text-green-400" : "text-green-600"
+            }`}>
               <Volume2 size={10} className="mr-1" /> Audio active
             </span>
-            <span className="text-[10px] text-gray-400">Voice activity detected</span>
+            <span className={`text-[10px] ${
+              theme === 'dark' ? "text-gray-400" : "text-gray-500"
+            }`}>Voice activity detected</span>
           </div>
           <AudioVisualizer audioStream={activeAudioStream} theme={theme} />
         </div>
@@ -852,21 +900,26 @@ function AudioCall({
           </StreamCall>
         </StreamVideo>
       ) : (
-        <div className="bg-gray-900 dark:bg-gray-950 p-3 rounded-md">
+        <div className={`p-3 rounded-md ${
+          theme === 'dark' ? 'bg-gray-900' : 'bg-white border border-gray-200'
+        }`}>
           {isLoading ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin mr-2 w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full" />
-              <p className="text-sm text-gray-300">Connecting...</p>
+              <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Connecting...</p>
             </div>
           ) : connectionError ? (
             <div className="flex flex-col items-center justify-center">
-              <span className="text-red-400 text-sm mb-2">{connectionError}</span>
+              <span className={`text-sm mb-2 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>{connectionError}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleReconnect}
                 disabled={isLoading}
-                className="bg-background/10 text-white hover:bg-background/20 dark:bg-gray-800 dark:hover:bg-gray-700"
+                className={theme === 'dark' 
+                  ? "bg-background/10 text-white hover:bg-background/20" 
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }
               >
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Reconnect
@@ -877,7 +930,11 @@ function AudioCall({
               onClick={handleReconnect}
               disabled={isLoading}
               size="sm"
-              className="w-full bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
+              className={`w-full ${
+                theme === 'dark'
+                  ? "bg-green-700 hover:bg-green-800 text-white"
+                  : "bg-green-600 hover:bg-green-700 text-white"
+              }`}
             >
               <Phone className="h-3 w-3 mr-1" />
               Join Voice Call
@@ -894,8 +951,10 @@ function AudioCall({
       return (
         <div className="flex justify-center items-center h-full">
           <div className="text-center">
-            <div className="animate-spin mb-4 mx-auto w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
-            <p className="text-lg">Initializing audio call...</p>
+            <div className={`animate-spin mb-4 mx-auto w-12 h-12 border-4 border-t-transparent rounded-full ${
+              theme === 'dark' ? 'border-primary' : 'border-green-600'
+            }`} />
+            <p className={`text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Initializing audio call...</p>
             {!isLoading && !isInCall && (
               <Button
                 onClick={handleReconnect}
@@ -931,8 +990,10 @@ function AudioCall({
     return (
       <div className="flex justify-center items-center h-full">
         <div className="text-center">
-          <div className="animate-spin mb-4 mx-auto w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
-          <p className="text-lg">Loading audio call...</p>
+          <div className={`animate-spin mb-4 mx-auto w-12 h-12 border-4 border-t-transparent rounded-full ${
+            theme === 'dark' ? 'border-primary' : 'border-green-600'
+          }`} />
+          <p className={`text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Loading audio call...</p>
         </div>
       </div>
     );
