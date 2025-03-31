@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface SessionTimerProps {
   session: {
@@ -14,6 +15,8 @@ interface SessionTimerProps {
     startedAt?: string;
     endedAt?: string;
     creatorID: string;
+    boardId?: string;
+    groupId?: string;
     participants?: Array<{
       socketId: string;
       userId: string;
@@ -79,6 +82,8 @@ export const SessionTimer = ({ session, onClose, onLeave, currentUserId }: Sessi
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const router = useNavigate();
+
   return (
     <motion.div
       drag
@@ -135,6 +140,15 @@ export const SessionTimer = ({ session, onClose, onLeave, currentUserId }: Sessi
                     ))}
                   </div>
                 </ScrollArea>
+                {/* <div className="">
+                  <Button
+                    onClick={() => {
+                      router(`/board/${session.boardId}`);
+                    }}
+                  >
+                    whiteboard
+                  </Button>
+                </div> */}
               </div>
 
               <div className="flex flex-col gap-2 mt-4">

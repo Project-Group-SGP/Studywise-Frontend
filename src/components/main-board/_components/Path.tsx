@@ -49,7 +49,7 @@ console.log("SVG Path for Layer:", getSvgPathFromStroke(strokeData));
       x={0}
       y={0}
       fill={fill||"black"}
-      stroke={stroke||"black"}
+      stroke={fill||"black"}
       strokeWidth={1}
     />
 

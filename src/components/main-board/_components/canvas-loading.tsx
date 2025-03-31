@@ -2,7 +2,7 @@ import { Loader } from "lucide-react";
 import { InfoSkeleton } from "./info";
 import { ParticipantsSkeleton } from "./participants";
 import { ToolbarSkeleton } from "./toolbar";
-
+import { ChatSkeleton } from "./chat";
 
 export const Loading = () => {
   return (
@@ -12,6 +12,7 @@ export const Loading = () => {
       <InfoSkeleton />
       <ParticipantsSkeleton />
       <ToolbarSkeleton />
+      <ChatSkeleton/>
     </main>
   )
 }
