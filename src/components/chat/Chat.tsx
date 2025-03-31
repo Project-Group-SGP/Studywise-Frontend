@@ -443,14 +443,14 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       }
     });
     
-    newSocket.on("call_participant_left", ({ userId: participantId, userName, reason }) => {
-      console.log(`Participant left: ${userName} (${participantId}), reason: ${reason || 'left manually'}`);
+    newSocket.on("call_participant_left", ({ userId: leftUserId, userName, callId, reason }) => {
+      console.log(`Participant left: ${userName} (${leftUserId}), reason: ${reason || 'left manually'}`);
       
       // Update the active call participants
       setActiveGroupCall(prev => {
         if (!prev) return null;
         
-        const updatedParticipants = prev.participants.filter(id => id !== participantId);
+        const updatedParticipants = prev.participants.filter(id => id !== leftUserId);
         
         // If no participants left, call has ended
         if (updatedParticipants.length === 0) {
@@ -464,7 +464,7 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
           participants: updatedParticipants
         };
         
-        if (participantId === prev.initiatedBy && updatedParticipants.length > 0) {
+        if (leftUserId === prev.initiatedBy && updatedParticipants.length > 0) {
           // If we're the oldest participant now in the call
           if (updatedParticipants[0] === userId) {
             updatedCall.initiatedBy = userId;
@@ -477,10 +477,10 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       });
       
       // Also remove from the detailed participants list
-      setCallParticipants(prev => prev.filter(p => p.id !== participantId));
+      setCallParticipants(prev => prev.filter(p => p.id !== leftUserId));
       
       // Show toast only if it's not the current user
-      if (participantId !== userId) {
+      if (leftUserId !== userId) {
         if (reason === 'offline') {
           toast.info(`${userName} disconnected from the call`);
         } else {
@@ -489,8 +489,12 @@ const ChatRoom = ({ groupId }: { groupId: string }) => {
       }
     });
     
-    newSocket.on("call_ended", ({ endedBy, endedByName }) => {
-      console.log(`Call ended by ${endedByName} (${endedBy})`);
+    newSocket.on("call_ended", (data = {}) => {
+      // Extract properties safely with default values
+      const endedBy = data?.endedBy;
+      const endedByName = data?.endedByName || 'Unknown user';
+      
+      console.log(`Call ended by ${endedByName} (${endedBy || 'unknown'})`);
       setActiveGroupCall(null);
       setCallParticipants([]);
       setShowStreamCall(false);
