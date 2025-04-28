@@ -9,7 +9,7 @@ export const Board = () => {
   const { activeSessions, endSession, leaveSession } = useSession();
   const { user } = useAuth();
   return (
-    <Room fallback={<Loading />}>
+    <>
       {activeSessions.length > 0 &&
         activeSessions.map((session) => {
           console.log("Session being rendered:", session);
@@ -23,7 +23,9 @@ export const Board = () => {
             />
           );
         })}
-      <Canvas />
-    </Room>
+      <Room fallback={<Loading />}>
+        <Canvas />
+      </Room>
+    </>
   );
 };
